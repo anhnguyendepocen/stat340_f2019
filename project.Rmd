@@ -1,0 +1,224 @@
+---
+title: Project Description
+---
+
+For the project you will create, in groups of 2 or 3, a thorough analysis of a particular dataset using at least one relatively advanced method that we have discussed in class and at least one method we have not discussed in class.  Deliverables for the project include:
+
+ 1. Your primary analysis write-up.  This will include:
+    a. a single R markdown file (that can be knitted) and
+    b. the resulting knitted pdf file
+ 2. An appendix containing your exploratory or preliminary analyses.  This will include:
+    a. a single R markdown file (that can be knitted) and
+    b. the resulting knitted pdf file
+ 3. An in-class presentation.  (**Still deciding if we will do this this year.**)
+
+### Deadlines
+
+This part of the page will be updated with more details and deadlines later.
+
+<!--
+* 5:00 PM Wed Oct 31: Fill out this google form indicating your preference for data set(s) to work with and/or your preference for group members: https://goo.gl/forms/EY1HLehwEURTrWpt2
+* 5:00 PM Fri Nov 9: First steps for the project (there are enough little things to do here that I want to see a small commit from every group member.  No one group member should do all the things!):
+    * Each team member should clone the repository to RStudio Server.
+    * Add your data file(s) to the repository (for the group working on dialects - I will do this for you by the evening of Monday, Nov 5).
+    * Create an R Markdown document that will have your preliminary/exploratory analyses in it, and write R code there to read in the data file to a data frame.
+    * Do a little initial exploration of the data set (a plot or two, examine whether there are missing values, start on any cleanup that needs to be done).
+    * Commit, push, and pull often.
+* 5:00 PM Fri Nov 30: working code implementing your methods
+* Fri Nov 30, Mon Dec 3, or Tues Dec 4: Draft slides done, let's meet to discuss them!  Book an appointment here: https://calendar.google.com/calendar/selfsched?sstoken=UUFsQ1lfNUJHOHNrfGRlZmF1bHR8NDcxZTFkMTIwNDEwZjI3MDhkZWI2ZTcyNDU5YzY5NzI
+* Dec. 5 and 7 (and Dec 10 if necessary): In-class presentations
+* End of finals period: final submission of write-up pushed to GitHub.
+-->
+
+### Data Sets
+
+Choice of a strong dataset will be particularly important.  Since our objective is to explore methods beyond multiple regression, your data set should be complex enough that more advanced methods are required/helpful.  I am providing a few possible data sets that I found here.  You are welcome to use one of these options, or to propose your own data sets.
+
+#### Data Set Option 1: Dialects in America
+
+Vaux, Bert, and Scott Golder. "The Harvard dialect survey." Cambridge, MA: Harvard University Linguistics Department (2003).
+
+A few years ago, a bunch of maps showing the distribution of dialects in America were published online.  Here's an example of maps like this: https://www.businessinsider.com/american-english-dialects-maps-2018-1
+
+I have written to Prof. Bert Vaux at the University of Cambridge and he has agreed to share data from his 2003 survey of dialect use in the United States.  We have survey responses from 47472 people.  For each person, we have a record of where that person lives as given by their city, state and zip code, and their responses to 122 questions.  The questions and possible responses for each question are posted here: https://www4.uwm.edu/FLL/linguistics/dialect/maps.html
+
+I think a good goal for this project would be to use these data to fit a classification method, and use it to create one or more maps similar to the map linked above, showing predicted class membership at each location in the US.
+
+A second analysis could be to use hierarchical clustering to group the survey respondents into a few groups according to their responses to the 122 survey questions.
+
+You may also come up with other questions you'd like to answer.
+
+Note that while Prof. Vaux has generously shared his data with us, he has asked that we not make the data public.  You will be able to make your analysis public if you wish, but not the data set.
+
+#### Data Set Option 2: Shelter Animal Outcomes
+
+https://www.kaggle.com/c/shelter-animal-outcomes
+
+Here's a description of this contest from Kaggle:
+
+> Every year, approximately 7.6 million companion animals end up in US shelters. Many animals are given up as unwanted by their owners, while others are picked up after getting lost or taken out of cruelty situations. Many of these animals find forever families to take them home, but just as many are not so lucky. 2.7 million dogs and cats are euthanized in the US every year.
+> 
+> Using a dataset of intake information including breed, color, sex, and age from the Austin Animal Center, we're asking Kagglers to predict the outcome for each animal.
+> 
+> We also believe this dataset can help us understand trends in animal outcomes. These insights could help shelters focus their energy on specific animals who need a little extra help finding a new home.
+
+#### Data Set Option 3: Superconductivity
+
+https://archive.ics.uci.edu/ml/datasets/Superconductivty+Data
+
+https://www.sciencedirect.com/science/article/pii/S0927025618304877?via%3Dihub
+
+Here's a quote from the original article linked above, Hamidieh, Kam, A data-driven statistical model for predicting the critical temperature of a superconductor, Computational Materials Science, Volume 154, November 2018, Pages 346-354.
+
+> Superconducting materials - materials that conduct current with zero resistance - have significant practical applications. Perhaps the best known application is in the Magnetic Resonance Imaging (MRI) systems widely employed by health care professionals for detailed internal body imaging...
+>
+> However, the wide spread applications of superconductors have been held back by two major issues: (1) A superconductor conducts current with zero resistance only at or below its superconducting critical temperature ($T_c$)... (2) The scientific model and theory that predicts is an open problem which has been baffling the scientific community since the discovery of superconductivity in 1911 by Heike Kamerlingh Onnes, in Leiden.
+>
+> In the absence of any theory-based prediction models, simple empirical rules based on experimental results have guided researchers in synthesizing superconducting materials for many years...
+>
+> In this study, we take an entirely data-driven approach to create a statistical model that predicts $T_c$ based on its chemical formula.
+
+#### Data Set Option 4: Restaurant Revenue Prediction
+
+https://www.kaggle.com/c/restaurant-revenue-prediction
+
+Here's a description of this contest from Kaggle:
+
+> With over 1,200 quick service restaurants across the globe, TFI is the company behind some of the world's most well-known brands: Burger King, Sbarro, Popeyes, Usta Donerci, and Arby’s. They employ over 20,000 people in Europe and Asia and make significant daily investments in developing new restaurant sites.
+>
+> Right now, deciding when and where to open new restaurants is largely a subjective process based on the personal judgement and experience of development teams. This subjective data is difficult to accurately extrapolate across geographies and cultures. 
+> 
+> New restaurant sites take large investments of time and capital to get up and running. When the wrong location for a restaurant brand is chosen, the site closes within 18 months and operating losses are incurred. 
+> 
+> Finding a mathematical model to increase the effectiveness of investments in new restaurant sites would allow TFI to invest more in other important business areas, like sustainability, innovation, and training for new employees. Using demographic, real estate, and commercial data, this competition challenges you to predict the annual restaurant sales of 100,000 regional locations.
+
+#### Data Set Option 5: Your Proposal
+
+You are also welcome to propose using a data set of your choosing.  If you go this route, I reserve the right to veto your proposal if I don't think it will work out for the purposes of this project.  You may wish to propose multiple options.  As you do this, I suggest that you avoid time series data.  We have not studied methods for dealing with data with the dependence structures that come with data collected over time.  I'm also less likely to accept proposals involving image data, unless the data set is well curated and pre-processed.
+
+Here are some places where you can look for data sets:
+
+ * Kaggle: https://www.kaggle.com/
+ * UCI Machine Learning Repository: https://archive.ics.uci.edu/ml/datasets/
+ * Google public data repository: https://www.google.com/publicdata/directory
+ * World Health Organization data: http://www.who.int/gho/database/en/
+ * Center for Disease Control data: http://www.cdc.gov/datastatistics/
+
+### Methods
+
+Although we spent a fair amount of time in this class discussing linear regression models, I fundamentally consider that to be a topic from Stat 242 that we reviewed in this course.  You may include an analysis using a "plain vanilla" linear regression model if you like, but you should also choose at least one of the other more advanced methods we discussed in class, as well as one other more advanced method that we did not have a chance to discuss in class.  Some options are listed below.
+
+Methods discussed in class (pick at least one from this list):
+
+ * Regression:
+    * Penalized regression (LASSO, ridge regression)
+    * KNN regression
+    * Random forests, boosted trees
+ * Classification:
+    * Multiple logistic regression
+    * KNN Classification
+    * Random forests, boosted trees
+
+Methods not discussed in class:
+
+ * Regression:
+    * Smoothing splines
+    * B-splines
+    * Local regression
+    * Neural networks
+    * Partial Least Squares
+    * Grouped LASSO
+    * Mixed or random effects models (These models are not really relevant to the four data sets I have posted, but come up very often in data analyses more oriented towards inference than prediction or classification.  The idea is that we made multiple measurements on the same object or person or that are otherwise connected, so we cannot assume that the data are independent.  This is a great topic to learn about, especially if you are more interested in statistial inference than statistical learning type of problems -- but only if you are comfortable with probability.  You would need to find your own data set to focus on this method.  If you want to explore this method but need help identifying a relevant data set, let me know.)
+    * generalized linear models with a multinomial, poisson, or negative binomial family
+ * Classification:
+    * Linear or Quadratic Discriminant Analysis
+    * Support vector machines
+    * Neural networks
+ * Dimension reduction (as a pre-processing step for either regression or classification):
+    * $t$-SNE (This is a popular method that would be great to learn about - but is more advanced, so only if you are comfortable with probability.)
+    * Priciple Components Analysis (Only if you are comfortable with linear algebra; uses the spectral decomposition (matrix diagonalization) or singular value decomposition.)
+ * Unsupervised learning:
+    * K-means clustering
+    * Hierarchical clustering
+ * Another method proposed by your group, subject to my approval
+
+If you would like, I can suggest methods appropriate to your group's chosen data set.  My goal will be to encourage diversity in the methods explored by the different groups so that the class can see a variety of different methods.  That means that I reserve the right to reject your group's initially proposed method, if multiple groups propose to use the same method.
+
+### Guidelines for the primary analysis write-up
+
+Overall, the project write-up should be written in clear, concise prose.  No R code should be shown unless it is explicitly needed to make a point (I will show you how to hide R code that is in an R markdown document so that it runs but is not displayed in the knitted document).
+
+Please follow the structure below:
+
+1. Title
+2. Summary: an introduction to the statistical problem you are addressing, brief description of the methods you consider, and summary of the results.  Aim for less than a page.
+3. Data: a brief summary of key features of the dataset.  You should define each variable that will be used (to the level that it is possible to do this, given the information provided by your data source).  It would also be good to include a few plots showing a few key insights about the data set.  Note that there will probably not be enough space to present every plot you make during the course of conducting your analysis; you will have to select a small number of the most informative plots to include.  At least a few sentences of context and description of the dataset should be included, and the number of observations in the data set should be stated.  Aim for about 2 pages.  
+4. Methods: a description of the statistical methods included in your analysis, your use of train/test splits and cross-validation to evaluate model performance.  Aim for about 2 pages.
+5. Results: a presentation of your results, including at a minimum a comparison of the relative performance of the different models you considered.  For some projects, other results may need to be presented as well.
+6. Discussion: summarize your work, its limitations, and possible future steps/improvements.
+7. References: cite all sources in proper format.
+
+Items one through 6 above should total 10 pages at most, including figures and tables.  You should use 11 or 12 point font and no less than 1 inch margins all around.
+
+### Group presentation
+
+Each group will present their project to the class in a 15 to 20 minute presentation.  You should prepare slides, or a website with slide-like content to walk through (I have in mind here groups who may want to demo interactive graphics), or similar.  Each group member will be expected to lead a part of this presentation.  The presentation should cover the following topics:
+
+1. Data set and context
+    * A description of the data set, variables involved, and questions you are trying to answer/goals of your analysis.
+
+2. Methods
+    * A brief statement of the "in-class" method you are using
+    * A more detailed statement of the "out-of-class" method you are using
+
+3. Results
+    * Presentation and interpretation of visualizations of results, if applicable
+    * A discussion of how you evaluated method(s)
+        * Train/test splits?
+        * Cross-validation schemes?
+        * Measures of performance? (MSE?  RMSE?  Classification error rate?  Something else?)
+    * A description of how the model(s) did
+    * Conclusions
+
+### Collaboration on GitHub
+
+It is expected that each group will craft their analysis collaboratively on GitHub.  I will be checking to ensure that there are multiple commits of substantive content from each group member's GitHub account.  We'll talk more about collaborative use of GitHub in coming days.
+
+### Group Dynamic Report
+
+Ideally, all group members would be equally involved and able and committed to the project.  In reality, it doesn't always work that way.  I'd like to reward people fairly for their efforts in this group endeavor, because it's inevitable that there will be variation in how high a priority people put on this class and how much effort they put into this project.  
+
+To this end I will ask each of you (individually) to describe how well (or how poorly!) your project group worked together and shared the load.  Also give some specific comments describing each member's overall effort.  Were there certain group members who really put out exceptional effort and deserve special recognition?  Conversely, were there group members who really weren't carrying their own weight?  And then, at the end of your assessment, estimate the percentage of the total amount of work/effort done by each member.  (Be sure your percentages sum to 100\%!)  
+
+For example, suppose you have 3 group members: X, Y and Z.  In the (unlikely) event that each member contributed equally, you could assign:
+
+ * 33.3\% for member X,
+ * 33.3\% for member Y, and
+ * 33.3\% for member Z
+
+Or in case person Z did twice as much work as each other member, you could assign:
+
+ * 25\% for member X,
+ * 25\% for member Y, and
+ * 50\% for member Z
+
+Or if member Y didn't really do much at all, you could assign:
+
+ * 45\% for member X,
+ * 10\% for member Y, and
+ * 45\% for member Z
+
+I'll find a fair way to synthesize the (possibly conflicting) assessments within each group.  And eventually I'll find a way to fairly incorporate this assessment of effort and cooperation in each individual's overall grade.  Don't pressure one another to give everyone glowing reports unless it's warranted, and don't feel pressured to share your reports with one another.  Just be fair to yourselves and to one another. Let me know if you have any questions or if you run into any problems.
+
+### Grading and Assessment Criteria
+
+Your project grade makes up 20% of your final grade for the class.  Basically, we're doing this instead of a final.
+
+ * Technical Mastery:  Do you demonstrate that you understand the methods you are using?  Does the submitted R code work correctly?
+
+ * Written Report:  How effectively does the written report communicate the goals, procedures, 
+and results of the study?  Are the claims adequately supported? How well is the report structured and 
+organized? Are all of the figures and tables numbered, captioned and appropriately referenced?  Does the writing style enhance what the group is trying to communicate?  How well is the report edited?  Are the statistical claims justified?
+
+ * Oral Presentation: How effectively does the oral presentation communicate the goals, procedures, and results of the study? Do the slides help to illustrate the points being made by the speaker without distracting the audience?
+

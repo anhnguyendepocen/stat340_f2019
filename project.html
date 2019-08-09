@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Project Description</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/paper.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 64px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h2 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h3 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h4 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h5 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h6 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Stat 340</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="schedule.html">Schedule</a>
+</li>
+<li>
+  <a href="homework.html">Homework</a>
+</li>
+<li>
+  <a href="exams.html">Quizzes/Exams</a>
+</li>
+<li>
+  <a href="project.html">Project</a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Project Description</h1>
+
+</div>
+
+
+<p>For the project you will create, in groups of 2 or 3, a thorough analysis of a particular dataset using at least one relatively advanced method that we have discussed in class and at least one method we have not discussed in class. Deliverables for the project include:</p>
+<ol style="list-style-type: decimal">
+<li>Your primary analysis write-up. This will include:
+<ol style="list-style-type: lower-alpha">
+<li>a single R markdown file (that can be knitted) and</li>
+<li>the resulting knitted pdf file</li>
+</ol></li>
+<li>An appendix containing your exploratory or preliminary analyses. This will include:
+<ol style="list-style-type: lower-alpha">
+<li>a single R markdown file (that can be knitted) and</li>
+<li>the resulting knitted pdf file</li>
+</ol></li>
+<li>An in-class presentation. (<strong>Still deciding if we will do this this year.</strong>)</li>
+</ol>
+<div id="deadlines" class="section level3">
+<h3>Deadlines</h3>
+<p>This part of the page will be updated with more details and deadlines later.</p>
+<!--
+* 5:00 PM Wed Oct 31: Fill out this google form indicating your preference for data set(s) to work with and/or your preference for group members: https://goo.gl/forms/EY1HLehwEURTrWpt2
+* 5:00 PM Fri Nov 9: First steps for the project (there are enough little things to do here that I want to see a small commit from every group member.  No one group member should do all the things!):
+    * Each team member should clone the repository to RStudio Server.
+    * Add your data file(s) to the repository (for the group working on dialects - I will do this for you by the evening of Monday, Nov 5).
+    * Create an R Markdown document that will have your preliminary/exploratory analyses in it, and write R code there to read in the data file to a data frame.
+    * Do a little initial exploration of the data set (a plot or two, examine whether there are missing values, start on any cleanup that needs to be done).
+    * Commit, push, and pull often.
+* 5:00 PM Fri Nov 30: working code implementing your methods
+* Fri Nov 30, Mon Dec 3, or Tues Dec 4: Draft slides done, let's meet to discuss them!  Book an appointment here: https://calendar.google.com/calendar/selfsched?sstoken=UUFsQ1lfNUJHOHNrfGRlZmF1bHR8NDcxZTFkMTIwNDEwZjI3MDhkZWI2ZTcyNDU5YzY5NzI
+* Dec. 5 and 7 (and Dec 10 if necessary): In-class presentations
+* End of finals period: final submission of write-up pushed to GitHub.
+-->
+</div>
+<div id="data-sets" class="section level3">
+<h3>Data Sets</h3>
+<p>Choice of a strong dataset will be particularly important. Since our objective is to explore methods beyond multiple regression, your data set should be complex enough that more advanced methods are required/helpful. I am providing a few possible data sets that I found here. You are welcome to use one of these options, or to propose your own data sets.</p>
+<div id="data-set-option-1-dialects-in-america" class="section level4">
+<h4>Data Set Option 1: Dialects in America</h4>
+<p>Vaux, Bert, and Scott Golder. “The Harvard dialect survey.” Cambridge, MA: Harvard University Linguistics Department (2003).</p>
+<p>A few years ago, a bunch of maps showing the distribution of dialects in America were published online. Here’s an example of maps like this: <a href="https://www.businessinsider.com/american-english-dialects-maps-2018-1" class="uri">https://www.businessinsider.com/american-english-dialects-maps-2018-1</a></p>
+<p>I have written to Prof. Bert Vaux at the University of Cambridge and he has agreed to share data from his 2003 survey of dialect use in the United States. We have survey responses from 47472 people. For each person, we have a record of where that person lives as given by their city, state and zip code, and their responses to 122 questions. The questions and possible responses for each question are posted here: <a href="https://www4.uwm.edu/FLL/linguistics/dialect/maps.html" class="uri">https://www4.uwm.edu/FLL/linguistics/dialect/maps.html</a></p>
+<p>I think a good goal for this project would be to use these data to fit a classification method, and use it to create one or more maps similar to the map linked above, showing predicted class membership at each location in the US.</p>
+<p>A second analysis could be to use hierarchical clustering to group the survey respondents into a few groups according to their responses to the 122 survey questions.</p>
+<p>You may also come up with other questions you’d like to answer.</p>
+<p>Note that while Prof. Vaux has generously shared his data with us, he has asked that we not make the data public. You will be able to make your analysis public if you wish, but not the data set.</p>
+</div>
+<div id="data-set-option-2-shelter-animal-outcomes" class="section level4">
+<h4>Data Set Option 2: Shelter Animal Outcomes</h4>
+<p><a href="https://www.kaggle.com/c/shelter-animal-outcomes" class="uri">https://www.kaggle.com/c/shelter-animal-outcomes</a></p>
+<p>Here’s a description of this contest from Kaggle:</p>
+<blockquote>
+<p>Every year, approximately 7.6 million companion animals end up in US shelters. Many animals are given up as unwanted by their owners, while others are picked up after getting lost or taken out of cruelty situations. Many of these animals find forever families to take them home, but just as many are not so lucky. 2.7 million dogs and cats are euthanized in the US every year.</p>
+<p>Using a dataset of intake information including breed, color, sex, and age from the Austin Animal Center, we’re asking Kagglers to predict the outcome for each animal.</p>
+<p>We also believe this dataset can help us understand trends in animal outcomes. These insights could help shelters focus their energy on specific animals who need a little extra help finding a new home.</p>
+</blockquote>
+</div>
+<div id="data-set-option-3-superconductivity" class="section level4">
+<h4>Data Set Option 3: Superconductivity</h4>
+<p><a href="https://archive.ics.uci.edu/ml/datasets/Superconductivty+Data" class="uri">https://archive.ics.uci.edu/ml/datasets/Superconductivty+Data</a></p>
+<p><a href="https://www.sciencedirect.com/science/article/pii/S0927025618304877?via%3Dihub">https://www.sciencedirect.com/science/article/pii/S0927025618304877?via%3Dihub</a></p>
+<p>Here’s a quote from the original article linked above, Hamidieh, Kam, A data-driven statistical model for predicting the critical temperature of a superconductor, Computational Materials Science, Volume 154, November 2018, Pages 346-354.</p>
+<blockquote>
+<p>Superconducting materials - materials that conduct current with zero resistance - have significant practical applications. Perhaps the best known application is in the Magnetic Resonance Imaging (MRI) systems widely employed by health care professionals for detailed internal body imaging…</p>
+<p>However, the wide spread applications of superconductors have been held back by two major issues: (1) A superconductor conducts current with zero resistance only at or below its superconducting critical temperature (<span class="math inline">\(T_c\)</span>)… (2) The scientific model and theory that predicts is an open problem which has been baffling the scientific community since the discovery of superconductivity in 1911 by Heike Kamerlingh Onnes, in Leiden.</p>
+<p>In the absence of any theory-based prediction models, simple empirical rules based on experimental results have guided researchers in synthesizing superconducting materials for many years…</p>
+<p>In this study, we take an entirely data-driven approach to create a statistical model that predicts <span class="math inline">\(T_c\)</span> based on its chemical formula.</p>
+</blockquote>
+</div>
+<div id="data-set-option-4-restaurant-revenue-prediction" class="section level4">
+<h4>Data Set Option 4: Restaurant Revenue Prediction</h4>
+<p><a href="https://www.kaggle.com/c/restaurant-revenue-prediction" class="uri">https://www.kaggle.com/c/restaurant-revenue-prediction</a></p>
+<p>Here’s a description of this contest from Kaggle:</p>
+<blockquote>
+<p>With over 1,200 quick service restaurants across the globe, TFI is the company behind some of the world’s most well-known brands: Burger King, Sbarro, Popeyes, Usta Donerci, and Arby’s. They employ over 20,000 people in Europe and Asia and make significant daily investments in developing new restaurant sites.</p>
+<p>Right now, deciding when and where to open new restaurants is largely a subjective process based on the personal judgement and experience of development teams. This subjective data is difficult to accurately extrapolate across geographies and cultures.</p>
+<p>New restaurant sites take large investments of time and capital to get up and running. When the wrong location for a restaurant brand is chosen, the site closes within 18 months and operating losses are incurred.</p>
+<p>Finding a mathematical model to increase the effectiveness of investments in new restaurant sites would allow TFI to invest more in other important business areas, like sustainability, innovation, and training for new employees. Using demographic, real estate, and commercial data, this competition challenges you to predict the annual restaurant sales of 100,000 regional locations.</p>
+</blockquote>
+</div>
+<div id="data-set-option-5-your-proposal" class="section level4">
+<h4>Data Set Option 5: Your Proposal</h4>
+<p>You are also welcome to propose using a data set of your choosing. If you go this route, I reserve the right to veto your proposal if I don’t think it will work out for the purposes of this project. You may wish to propose multiple options. As you do this, I suggest that you avoid time series data. We have not studied methods for dealing with data with the dependence structures that come with data collected over time. I’m also less likely to accept proposals involving image data, unless the data set is well curated and pre-processed.</p>
+<p>Here are some places where you can look for data sets:</p>
+<ul>
+<li>Kaggle: <a href="https://www.kaggle.com/" class="uri">https://www.kaggle.com/</a></li>
+<li>UCI Machine Learning Repository: <a href="https://archive.ics.uci.edu/ml/datasets/" class="uri">https://archive.ics.uci.edu/ml/datasets/</a></li>
+<li>Google public data repository: <a href="https://www.google.com/publicdata/directory" class="uri">https://www.google.com/publicdata/directory</a></li>
+<li>World Health Organization data: <a href="http://www.who.int/gho/database/en/" class="uri">http://www.who.int/gho/database/en/</a></li>
+<li>Center for Disease Control data: <a href="http://www.cdc.gov/datastatistics/" class="uri">http://www.cdc.gov/datastatistics/</a></li>
+</ul>
+</div>
+</div>
+<div id="methods" class="section level3">
+<h3>Methods</h3>
+<p>Although we spent a fair amount of time in this class discussing linear regression models, I fundamentally consider that to be a topic from Stat 242 that we reviewed in this course. You may include an analysis using a “plain vanilla” linear regression model if you like, but you should also choose at least one of the other more advanced methods we discussed in class, as well as one other more advanced method that we did not have a chance to discuss in class. Some options are listed below.</p>
+<p>Methods discussed in class (pick at least one from this list):</p>
+<ul>
+<li>Regression:
+<ul>
+<li>Penalized regression (LASSO, ridge regression)</li>
+<li>KNN regression</li>
+<li>Random forests, boosted trees</li>
+</ul></li>
+<li>Classification:
+<ul>
+<li>Multiple logistic regression</li>
+<li>KNN Classification</li>
+<li>Random forests, boosted trees</li>
+</ul></li>
+</ul>
+<p>Methods not discussed in class:</p>
+<ul>
+<li>Regression:
+<ul>
+<li>Smoothing splines</li>
+<li>B-splines</li>
+<li>Local regression</li>
+<li>Neural networks</li>
+<li>Partial Least Squares</li>
+<li>Grouped LASSO</li>
+<li>Mixed or random effects models (These models are not really relevant to the four data sets I have posted, but come up very often in data analyses more oriented towards inference than prediction or classification. The idea is that we made multiple measurements on the same object or person or that are otherwise connected, so we cannot assume that the data are independent. This is a great topic to learn about, especially if you are more interested in statistial inference than statistical learning type of problems – but only if you are comfortable with probability. You would need to find your own data set to focus on this method. If you want to explore this method but need help identifying a relevant data set, let me know.)</li>
+<li>generalized linear models with a multinomial, poisson, or negative binomial family</li>
+</ul></li>
+<li>Classification:
+<ul>
+<li>Linear or Quadratic Discriminant Analysis</li>
+<li>Support vector machines</li>
+<li>Neural networks</li>
+</ul></li>
+<li>Dimension reduction (as a pre-processing step for either regression or classification):
+<ul>
+<li><span class="math inline">\(t\)</span>-SNE (This is a popular method that would be great to learn about - but is more advanced, so only if you are comfortable with probability.)</li>
+<li>Priciple Components Analysis (Only if you are comfortable with linear algebra; uses the spectral decomposition (matrix diagonalization) or singular value decomposition.)</li>
+</ul></li>
+<li>Unsupervised learning:
+<ul>
+<li>K-means clustering</li>
+<li>Hierarchical clustering</li>
+</ul></li>
+<li>Another method proposed by your group, subject to my approval</li>
+</ul>
+<p>If you would like, I can suggest methods appropriate to your group’s chosen data set. My goal will be to encourage diversity in the methods explored by the different groups so that the class can see a variety of different methods. That means that I reserve the right to reject your group’s initially proposed method, if multiple groups propose to use the same method.</p>
+</div>
+<div id="guidelines-for-the-primary-analysis-write-up" class="section level3">
+<h3>Guidelines for the primary analysis write-up</h3>
+<p>Overall, the project write-up should be written in clear, concise prose. No R code should be shown unless it is explicitly needed to make a point (I will show you how to hide R code that is in an R markdown document so that it runs but is not displayed in the knitted document).</p>
+<p>Please follow the structure below:</p>
+<ol style="list-style-type: decimal">
+<li>Title</li>
+<li>Summary: an introduction to the statistical problem you are addressing, brief description of the methods you consider, and summary of the results. Aim for less than a page.</li>
+<li>Data: a brief summary of key features of the dataset. You should define each variable that will be used (to the level that it is possible to do this, given the information provided by your data source). It would also be good to include a few plots showing a few key insights about the data set. Note that there will probably not be enough space to present every plot you make during the course of conducting your analysis; you will have to select a small number of the most informative plots to include. At least a few sentences of context and description of the dataset should be included, and the number of observations in the data set should be stated. Aim for about 2 pages.<br />
+</li>
+<li>Methods: a description of the statistical methods included in your analysis, your use of train/test splits and cross-validation to evaluate model performance. Aim for about 2 pages.</li>
+<li>Results: a presentation of your results, including at a minimum a comparison of the relative performance of the different models you considered. For some projects, other results may need to be presented as well.</li>
+<li>Discussion: summarize your work, its limitations, and possible future steps/improvements.</li>
+<li>References: cite all sources in proper format.</li>
+</ol>
+<p>Items one through 6 above should total 10 pages at most, including figures and tables. You should use 11 or 12 point font and no less than 1 inch margins all around.</p>
+</div>
+<div id="group-presentation" class="section level3">
+<h3>Group presentation</h3>
+<p>Each group will present their project to the class in a 15 to 20 minute presentation. You should prepare slides, or a website with slide-like content to walk through (I have in mind here groups who may want to demo interactive graphics), or similar. Each group member will be expected to lead a part of this presentation. The presentation should cover the following topics:</p>
+<ol style="list-style-type: decimal">
+<li>Data set and context
+<ul>
+<li>A description of the data set, variables involved, and questions you are trying to answer/goals of your analysis.</li>
+</ul></li>
+<li>Methods
+<ul>
+<li>A brief statement of the “in-class” method you are using</li>
+<li>A more detailed statement of the “out-of-class” method you are using</li>
+</ul></li>
+<li>Results
+<ul>
+<li>Presentation and interpretation of visualizations of results, if applicable</li>
+<li>A discussion of how you evaluated method(s)
+<ul>
+<li>Train/test splits?</li>
+<li>Cross-validation schemes?</li>
+<li>Measures of performance? (MSE? RMSE? Classification error rate? Something else?)</li>
+</ul></li>
+<li>A description of how the model(s) did</li>
+<li>Conclusions</li>
+</ul></li>
+</ol>
+</div>
+<div id="collaboration-on-github" class="section level3">
+<h3>Collaboration on GitHub</h3>
+<p>It is expected that each group will craft their analysis collaboratively on GitHub. I will be checking to ensure that there are multiple commits of substantive content from each group member’s GitHub account. We’ll talk more about collaborative use of GitHub in coming days.</p>
+</div>
+<div id="group-dynamic-report" class="section level3">
+<h3>Group Dynamic Report</h3>
+<p>Ideally, all group members would be equally involved and able and committed to the project. In reality, it doesn’t always work that way. I’d like to reward people fairly for their efforts in this group endeavor, because it’s inevitable that there will be variation in how high a priority people put on this class and how much effort they put into this project.</p>
+<p>To this end I will ask each of you (individually) to describe how well (or how poorly!) your project group worked together and shared the load. Also give some specific comments describing each member’s overall effort. Were there certain group members who really put out exceptional effort and deserve special recognition? Conversely, were there group members who really weren’t carrying their own weight? And then, at the end of your assessment, estimate the percentage of the total amount of work/effort done by each member. (Be sure your percentages sum to 100%!)</p>
+<p>For example, suppose you have 3 group members: X, Y and Z. In the (unlikely) event that each member contributed equally, you could assign:</p>
+<ul>
+<li>33.3% for member X,</li>
+<li>33.3% for member Y, and</li>
+<li>33.3% for member Z</li>
+</ul>
+<p>Or in case person Z did twice as much work as each other member, you could assign:</p>
+<ul>
+<li>25% for member X,</li>
+<li>25% for member Y, and</li>
+<li>50% for member Z</li>
+</ul>
+<p>Or if member Y didn’t really do much at all, you could assign:</p>
+<ul>
+<li>45% for member X,</li>
+<li>10% for member Y, and</li>
+<li>45% for member Z</li>
+</ul>
+<p>I’ll find a fair way to synthesize the (possibly conflicting) assessments within each group. And eventually I’ll find a way to fairly incorporate this assessment of effort and cooperation in each individual’s overall grade. Don’t pressure one another to give everyone glowing reports unless it’s warranted, and don’t feel pressured to share your reports with one another. Just be fair to yourselves and to one another. Let me know if you have any questions or if you run into any problems.</p>
+</div>
+<div id="grading-and-assessment-criteria" class="section level3">
+<h3>Grading and Assessment Criteria</h3>
+<p>Your project grade makes up 20% of your final grade for the class. Basically, we’re doing this instead of a final.</p>
+<ul>
+<li><p>Technical Mastery: Do you demonstrate that you understand the methods you are using? Does the submitted R code work correctly?</p></li>
+<li><p>Written Report: How effectively does the written report communicate the goals, procedures, and results of the study? Are the claims adequately supported? How well is the report structured and organized? Are all of the figures and tables numbered, captioned and appropriately referenced? Does the writing style enhance what the group is trying to communicate? How well is the report edited? Are the statistical claims justified?</p></li>
+<li><p>Oral Presentation: How effectively does the oral presentation communicate the goals, procedures, and results of the study? Do the slides help to illustrate the points being made by the speaker without distracting the audience?</p></li>
+</ul>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

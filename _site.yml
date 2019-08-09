@@ -1,0 +1,17 @@
+name: "mhc-stat140-f2018-website"
+output_dir: "."
+output:
+  html_document:
+    theme: paper
+navbar:
+  type: default
+  title: "Stat 340"
+  right:
+    - text: "Schedule"
+      href: schedule.html
+    - text: "Homework"
+      href: homework.html
+    - text: "Quizzes/Exams"
+      href: exams.html
+    - text: "Project"
+      href: project.html

@@ -1,0 +1,175 @@
+---
+title: "Model Comparison -- Example 2 Wrap-Up"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Recall we fit a line, a parabola, and a degree 9 polynomial to model the relationship between a car's weight (`Weight`) and its fuel efficiency (`MPG`).
+
+We fit these models to 10 cars that were selected from a larger data set of 38 cars.  These 10 cars are the **training set**: they were used to **train** the model, or estimate the model parameters.
+
+The remaining 28 cars can be used as a **test set**: a set of observations that were *not* used in model estimation, and can therefore be used to independently check the quality of the model fit.
+
+The train and test set are labeled as such in the plot below.
+
+```{r, fig.height = 3, fig.width = 6, message=FALSE, warning=FALSE}
+library(dplyr) # for data manipulation functions
+library(tidyr) # for data manipulation functions
+library(readr) # for read_csv, which can read csv files from the internet
+library(ggplot2) # for making plots
+library(gridExtra) # for grid.arrange, which arranges the plots next to each other
+library(polynom) # for obtaining the third polynomial fit below
+
+cars <- read_csv("http://www.evanlray.com/data/sdm4/Cars.csv")
+cars$train_test <- "test"
+cars$train_test[c(1, 6, 8, 14, 15, 16, 21, 32, 33, 37)] <- "train"
+
+ggplot() + 
+  geom_point(data = cars, mapping = aes(x = Weight, y = MPG, color = train_test)) +
+  scale_color_manual(breaks = c("test", "train"), values = c("black", "red"))
+```
+
+Here are the plots again, over both the training and test sets.  The estimated curves are shown in red, to indicate that they were fit to the training data set.
+
+```{r, fig.height = 3.75, echo = FALSE, message=FALSE, warning=FALSE}
+cars_subset <- cars %>% filter(train_test == "train")
+
+lm1 <- lm(MPG ~ Weight, data = cars_subset)
+predict_1 <- function(x) {
+  predict(lm1, data.frame(Weight = x))
+}
+
+p1 <- ggplot(data = cars, mapping = aes(x = Weight, y = MPG, color = train_test)) + 
+  geom_point() +
+  scale_color_manual(breaks = c("test", "train"), values = c("black", "red")) +
+  stat_function(fun = predict_1, color = "red") +
+  ggtitle("linear fit")
+
+lm2 <- lm(MPG ~ Weight + I(Weight^2), data = cars_subset)
+predict_2 <- function(x) {
+  predict(lm2, data.frame(Weight = x))
+}
+
+p2 <- ggplot(data = cars, mapping = aes(x = Weight, y = MPG, color = train_test)) + 
+  geom_point() +
+  scale_color_manual(breaks = c("test", "train"), values = c("black", "red")) +
+  stat_function(fun = predict_2, color = "red") +
+  ggtitle("quadratic fit")
+
+# Our degree 9 polynomial fit is not obtained from lm (although you could do that too)
+# You don't need to know how to use the poly.calc function.
+fit9 <- poly.calc(cars_subset$Weight, cars_subset$MPG)
+predict_9 <- as.function(fit9)
+
+p3 <- ggplot(data = cars, mapping = aes(x = Weight, y = MPG, color = train_test)) + 
+  geom_point() +
+  scale_color_manual(breaks = c("test", "train"), values = c("black", "red")) +
+  stat_function(fun = predict_9, n = 1000001, color = "red") +
+  ylim(c(15, 40)) +
+  ggtitle("degree 9 fit, zoomed in")
+
+p4 <- ggplot(data = cars, mapping = aes(x = Weight, y = MPG, color = train_test)) + 
+  geom_point() +
+  scale_color_manual(breaks = c("test", "train"), values = c("black", "red")) +
+  stat_function(fun = predict_9, n = 100001, color = "red") +
+  ggtitle("degree 9 fit, zoomed out")
+
+grid.arrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
+```
+
+
+Below is R code for calculating and plotting:
+
+ * the mean squared error, separately for the train and test sets for each of our three candidate models; and
+ * estimates of the residual standard error based on the train and test sets for each of our three candidate models.
+
+```{r}
+#' Calculate the Sum of Squared Residuals, SSR
+#' 
+#' @param x a vector of residuals
+#' 
+#' @return sum of squared residuals
+SSR <- function(x) {
+  sum(x^2)
+}
+
+#' Calculate the Mean Squared Error (MSE)
+#' 
+#' @param x a vector of residuals
+#' 
+#' @return mean of squared residuals
+MSE <- function(x) {
+  mean(x^2)
+}
+
+model_residual_summaries <- cars %>%
+  transmute(
+    train_test = train_test,
+    residual_linear = MPG - predict_1(Weight),
+    residual_quadratic = MPG - predict_2(Weight),
+    residual_degree9 = MPG - predict_9(Weight)
+  ) %>%
+  group_by(train_test) %>%
+  summarize_all(
+    .funs = c("SSR", "MSE")
+  ) %>%
+  gather("condition", "value", -train_test) %>%
+  mutate(
+    condition = substr(condition, 10, nchar(condition))
+  ) %>%
+  separate(col = condition, into = c("model", "summary"), sep = "_") %>%
+  mutate(
+    model = factor(model, levels = c("linear", "quadratic", "degree9"), ordered = TRUE)
+  )
+
+model_residual_summaries
+```
+\newpage
+
+```{r, fig.height=3.5}
+ggplot(data = model_residual_summaries) +
+  geom_point(mapping = aes(x = model, y = value)) + 
+  facet_grid(train_test ~ summary, scales = "free") +
+  ggtitle("results, regular vertical axis scale")
+
+ggplot(data = model_residual_summaries) +
+  geom_point(mapping = aes(x = model, y = value)) + 
+  facet_grid(train_test ~ summary, scales = "free") +
+  scale_y_log10() + 
+  ggtitle("results, logarithmic vertical axis scale")
+```
+
+\newpage
+
+Additionally, here are the $R^2$ values for these three models as evaluated on the training data (a "testing data $R^2$" doesn't really make sense -- why?):
+
+```{r}
+TSS <- sum((cars$MPG - mean(cars$MPG))^2)
+
+# R^2 linear regression
+RSS_linear <- model_residual_summaries %>%
+  filter(model == "linear", summary == "SSR", train_test == "train") %>%
+  select(value) %>%
+  as.numeric()
+
+1 - RSS_linear / TSS
+
+# R^2 quadratic regression
+RSS_quadratic <- model_residual_summaries %>%
+  filter(model == "quadratic", summary == "SSR", train_test == "train") %>%
+  select(value) %>%
+  as.numeric()
+
+1 - RSS_quadratic / TSS
+
+# R^2 degree 9 polynomial regression
+RSS_degree9 <- model_residual_summaries %>%
+  filter(model == "degree9", summary == "SSR", train_test == "train") %>%
+  select(value) %>%
+  as.numeric()
+
+1 - RSS_degree9 / TSS
+```

@@ -1,0 +1,181 @@
+---
+title: "Polynomial Regression"
+author: "Adapted from De Veaux, Velleman, and Bock"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Emperor penguins can slow their heart rates while diving.  Here's a plot showing 125 observations of penguin dives, with the duration of the penguin's dive on the horizontal axis and the penguin's heart rate on the vertical axis.
+
+```{r, fig.height = 3, fig.width = 3, message=FALSE, warning=FALSE}
+library(readr) # for read_csv, which can read csv files from the internet
+library(dplyr) # for data manipulation functions
+library(ggplot2) # for making plots
+
+penguins <- read_csv("http://www.evanlray.com/data/sdm4/Penguins.csv")
+
+ggplot() + 
+  geom_point(data = penguins, mapping = aes(x = Duration, y = DiveHeartRate))
+```
+
+\newpage
+
+## Linear Fit
+
+Is a simple linear regression model good enough?  Let's fit a model and look at some diagnostic plots to find out:
+
+```{r, fig.height = 3}
+slr_fit <- lm(DiveHeartRate ~ Duration, data = penguins)
+summary(slr_fit)
+```
+
+#### 1. Write down the model that we fit, for a single observation indexed by $i$.
+
+\vspace{1in}
+
+#### 2. Write down the model that we fit, for all observations using matrix notation.
+
+\vspace{1in}
+
+#### 3. Write down the estimated equation for predicting dive heart rate as a function of dive duration, for a single observation indexed by $i$.
+
+\vspace{1in}
+
+\newpage
+
+```{r, fig.height = 2.75}
+predict_slr <- function(x) {
+  predict(slr_fit, data.frame(Duration = x))
+}
+
+ggplot(data = penguins, mapping = aes(x = Duration, y = DiveHeartRate)) + 
+  geom_point() +
+  stat_function(fun = predict_slr) +
+  ggtitle("Linear fit")
+
+penguins <- penguins %>%
+  mutate(
+    residual_slr = residuals(slr_fit)
+  )
+
+ggplot(data = penguins, mapping = aes(x = Duration, y = residual_slr)) +
+  geom_point() + 
+  geom_smooth() +
+  ggtitle("Residuals vs Duration diagnostic plot, linear fit")
+```
+
+There is a clear trend in the residuals.  Let's try fitting a parabola instead.
+
+\newpage
+
+## Quadratic Fit
+
+Note the addition of ` + I(Duration^2)` in the model formula.
+
+```{r, fig.height = 2.75}
+quad_fit <- lm(DiveHeartRate ~ Duration + I(Duration^2), data = penguins)
+summary(quad_fit)
+```
+
+#### 4. Write down the model that we fit
+
+\vspace{1in}
+
+#### 5. Write down the model that we fit, for all observations using matrix notation.
+
+\vspace{1in}
+
+#### 6. Write down the estimated equation for predicting dive heart rate as a function of dive duration.
+
+\vspace{1in}
+
+
+```{r, fig.height = 2.75}
+predict_quad <- function(x) {
+  predict(quad_fit, data.frame(Duration = x))
+}
+
+ggplot(data = penguins, mapping = aes(x = Duration, y = DiveHeartRate)) + 
+  geom_point() +
+  stat_function(fun = predict_quad) +
+  ggtitle("Quadratic fit")
+
+penguins <- penguins %>%
+  mutate(
+    residual_quad = residuals(quad_fit)
+  )
+
+ggplot(data = penguins, mapping = aes(x = Duration, y = residual_quad)) +
+  geom_point() + 
+  geom_smooth() +
+  ggtitle("Residuals vs Duration diagnostic plot, quadratic fit")
+```
+
+Not as much of a trend...  What happens if we fit a cubic polynomial?
+
+\newpage
+
+## Cubic Fit
+
+```{r, fig.height = 3}
+cubic_fit <- lm(DiveHeartRate ~ Duration + I(Duration^2) + I(Duration^3), data = penguins)
+summary(cubic_fit)
+```
+
+#### 7. Write down the model that we fit
+
+\vspace{1in}
+
+#### 8. Write down the model that we fit, for all observations using matrix notation.
+
+\vspace{1in}
+
+#### 9. Write down the estimated equation for predicting dive heart rate as a function of dive duration.
+
+\vspace{1in}
+
+```{r, fig.height = 2.75}
+predict_cubic <- function(x) {
+  predict(cubic_fit, data.frame(Duration = x))
+}
+
+ggplot(data = penguins, mapping = aes(x = Duration, y = DiveHeartRate)) + 
+  geom_point() +
+  stat_function(fun = predict_cubic) +
+  ggtitle("cubic fit")
+
+penguins <- penguins %>%
+  mutate(
+    residual_cubic = residuals(cubic_fit)
+  )
+
+ggplot(data = penguins, mapping = aes(x = Duration, y = residual_cubic)) +
+  geom_point() + 
+  geom_smooth() +
+  ggtitle("Residuals vs Duration diagnostic plot, cubic fit")
+```
+
+#### 10. Does this residuals plot indicate the presence of further non-linearities not captured by our model?
+
+\vspace{1in}
+
+#### 11. Are there any other concerns raised by this residuals plot?
+
+\vspace{1in}
+
+#### 12. Suggest a strategy to address the concern you raised in question 11.
+
+\newpage
+
+Note: we can also get the same model fit another way, using `poly()` instead of `I()`:
+
+```{r}
+cubic_fit <- lm(DiveHeartRate ~ poly(Duration, 3, raw = TRUE), data = penguins)
+summary(cubic_fit)
+```
+
+
+

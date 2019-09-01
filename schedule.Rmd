@@ -2,7 +2,7 @@
   title: "Schedule"
 ---
   
-  **Click on the text like "Week 1: Sep 5 -- 7" to expand or collapse the items we covered in that week.**
+  **Click on the text like "Week 1: Sep 02 -- Sep 06" to expand or collapse the items we covered in that week.**
   
   I will fill in more detail and provide links to lecture notes and labs as we go along.  Items for future dates are tentative and subject to change.
 
@@ -42,12 +42,28 @@ make_week_box("week1", TRUE, "Week 1: Sep 02 -- Sep 06", "
 
 #### Wed, Sep 04
  * **In class**, we will work on:
+    * Overview of course (slides): [pdf](materials/20190904_intro/20190904_slides_class_overview.pdf)
+    * Warmup activity in groups: [pdf](materials/20190904_intro/20190904_slr_warmup.pdf)
+    * Brief reminder of commands for simple linear regression in R: [pdf](materials/20190904_intro/201900904_SLR_summary.pdf)
+    * Matrix notation for multiple regression (See Chapter 1 of ISLR and [https://en.wikipedia.org/wiki/Linear_regression#Introduction](https://en.wikipedia.org/wiki/Linear_regression#Introduction))
+    * Get set up with GitHub:
+        * Video overview: [https://www.youtube.com/watch?v=YxZ8J2rqhEM](https://www.youtube.com/watch?v=YxZ8J2rqhEM)
+        * pdf with detailed instructions: [pdf](materials/20190904_intro/Stat340-github-setup.pdf)
+        * On step 1, please enter your name and GitHub user name in this form: [https://forms.gle/tmv25zoB4EPipa7f8](https://forms.gle/tmv25zoB4EPipa7f8)
  * **After class**, please:
-
+    * Sign up for our class on Piazza: https://piazza.com/mtholyoke/fall2019/stat340
+    * Fill out this poll about when my office hours should be held: [http://whenisgood.net/8jeinxd](http://whenisgood.net/8jeinxd)
+    * Finish getting RStudio set up with GitHub if you didn't get there in class - ask if you have any questions!
+    * Review the handout about simple linear regression
+    * Start reading Chapter 1, and Sections 2.1, 2.2.1, 2.2.2, 3.1, 3.2, and 3.3 of ISLR.  This material should be mostly familiar, but we will discuss this material over the first two weeks or so of class.
+    * Ask any questions on piazza!
 
 #### Fri, Sep 06
  * **In class**, we will work on:
+    * Polynomial Regression (Section 3.3 of ISLR)
+    * Training and test sets -- why and how (Section 2.2 of ISLR)
  * **After class**, please:
+    * Continue reading Chapter 1, and Sections 2.1, 2.2.1, 2.2.2, 3.1, 3.2, and 3.3 of ISLR.
 ")
 ```
 
@@ -55,16 +71,24 @@ make_week_box("week1", TRUE, "Week 1: Sep 02 -- Sep 06", "
 make_week_box("week2", TRUE, "Week 2: Sep 09 -- Sep 13", "
 #### Mon, Sep 09
  * **In class**, we will work on:
+    * Model estimation by minimizing Residual Sum of Squares (Sections 3.1.1 and 3.2.1 of ISLR)
+    * Residual Sum of Squares (RSS), Total Sum of Squares (TSS) (Section 3.1 of ISLR)
+    * Matrix notation view of least squares parameter estimates and fitted values (Not in ISLR but super important!!)
  * **After class**, please:
+    * Continue reading Chapter 1, and Sections 2.1, 2.2.1, 2.2.2, 3.1, 3.2, and 3.3 of ISLR.
 
 
 #### Wed, Sep 11
  * **In class**, we will work on:
+    * Finish any remaining material from Monday
+    * Lab on simple linear and polynomial regression, train/test splits, and sums of squares
  * **After class**, please:
+    * Finish today's lab if you didn't have time to finish it in class.
 
 
 #### Fri, Sep 13
  * **In class**, we will work on:
+    * Mean Squared Error and the Bias/Variance trade-off (Sections 2.1.1 and 2.2.2 in ISLR)
  * **After class**, please:
 ")
 ```
@@ -273,15 +297,15 @@ make_week_box("week14", TRUE, "Week 14: Dec 02 -- Dec 06", "
 
 #### Wed, Dec 04
  * **In class**, we will work on:
-    * **Evan is away at a conference**
-    * Time to work on projects?
+    * **Evan is away at a conference.**
+    * Time to work on your projects in groups.
  * **After class**, please:
 
 
 #### Fri, Dec 06
  * **In class**, we will work on:
-    * **Evan is away at a conference**
-    * Time to work on projects?
+    * **Evan is away at a conference.**
+    * Time to work on your projects in groups.
  * **After class**, please:
 ")
 ```

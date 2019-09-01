@@ -1,0 +1,189 @@
+---
+title: 'Setting up GitHub and RStudio'
+author: "Evan Ray, adapted from Nicholas Horton"
+output:
+  pdf_document:
+    fig_height: 2.5
+    fig_width: 6.5
+  html_document:
+    fig_height: 3
+    fig_width: 5
+  word_document:
+    fig_height: 3
+    fig_width: 5
+---
+
+
+```{r, include=FALSE}
+# Don't delete this chunk if you are using the mosaic package
+# This loads the mosaic and dplyr packages
+require(mosaic)
+require(tidyr)
+options(digits=3)
+```
+
+```{r, include=FALSE}
+# Some customization.  You can alter or delete as desired (if you know what you are doing).
+
+# This changes the default colors in lattice plots.
+trellis.par.set(theme=theme.mosaic())  
+
+# knitr settings to control how R chunks work.
+require(knitr)
+opts_chunk$set(
+  tidy=FALSE,     # display code as typed
+  size="small"    # slightly smaller font for code
+)
+# This loads the mosaic data sets.  (Could be deleted if you are not using them.)
+require(mosaicData)                
+```
+
+### Overview of Git and GitHub
+
+Git is a system that lets you:
+
+* Store versions of your files at key points that you want to be able to get back to
+* Revert to previous versions of your files if need be
+*	Collaborate with other people making changes to the same files you are working on
+*	Share your work with the world
+
+Your code (or other work) is kept in a *repository*.  There are typically at least two copies of this repository:
+
+1.	One on a server on the internet; in this class we will keep a copy of our code on GitHub
+2.	One on the computer where you are editing the files; in this class I will suggest that you keep these files on RStudio Server.
+
+If other people are also working on these files, they may have their own copies of the respository as well.  In particular, I will be making my own copy of all assignment repositories with work you submit in this class.
+
+### Purpose of this Activity
+
+Today's activity will allow us to move forward in terms of the use of GitHub in the class.  We will do three things.  The first of these steps will have to be done only once, today.  The others will be done every time you start a new assignment or lab, or make changes to files in an assignment or lab.
+
+1. Create a GitHub user account and set up RStudio Server to work with that account (today only!)
+2. Clone a repository from GitHub (every time you start a new lab or homework assignment)
+3. Make changes to files in that repository, add and commit those files to a local repository, and push your changes to GitHub. (every time you make changes you want to save)
+
+Note that the procedures we outline today will work if you are the only person working on a project.
+
+### Step 1: Create a GitHub User Account and set it up on RStudio Server (today only! one-time only task)
+
+#### 1. A) Create a GitHub User Account
+
+0) If you already have a GitHub account, please just **fill out the questionairre on the schedule page of the course website, filling in your github user name** and go to step 1. B).  Otherwise, read on...
+
+1) Go to \url{https://github.com/}
+
+2) Click "Sign Up" in the top right corner and complete the registration process.
+
+3) Fill out the questionairre on the schedule page of the course website, filling in your github user name.
+
+#### 1. B) Configure github on the rstudio.mtholyoke.edu server
+
+1) Go to \url{https://rstudio.mtholyoke.edu} and sign in with your Mount Holyoke user name (it's your email **without** the  `@mtholyoke.edu` part) and password
+
+2) Select "Shell" from the "Tools" menu
+
+3) Run the commands (replacing XX with your GitHub username and your email address)
+
+`git config --global user.name 'XX'`
+
+`git config --global user.email 'XX'`
+
+`git config --global --list`
+
+4) Close the shell
+
+#### 1. C) Generate ssh (secure shell) keys
+
+1) Generate ssh keys on the RStudio server, select `Tools`; `Global Options`; `Git/SVN`; `SSH` 
+
+\includegraphics[width=0.5\textwidth]{github2.png}
+
+2) Click on the "Create RSA key" link
+
+3) I would recommend *not* using a passphrase (otherwise you will be regularly prompted for your password)
+
+4) Click "Create"
+
+5) Close the "Create RSA key" box.
+
+
+#### 1. D) Add public key to GitHub (One time only)
+
+1) In RStudio, click on the "View public key" link (under "Tools", "Global Options", "Git/SVN").  You may still be here from the end of Step 2.
+
+2) Copy the public key.
+
+3) Open up github.com (with you logged in)
+
+4) Click on the icon on the top right and select "Settings"
+
+5) Click on "SSH and GPG keys"
+
+4) Click on "New SSH key"
+
+5) Title this 'MHC R server'
+
+6) Paste in the public key
+
+7) Github will prompt you for your password (you don't want people adding in keys without your knowledge!
+
+8) Close the window.
+
+
+### Step 2: Clone a repository from GitHub (every time you start a new lab or homework assignment)
+
+Our goal is to **clone** a repository that already exists on GitHub; after we're done, the files that are there will be available for you to edit in RStudio Server.
+
+1) Open the repo I've created for you on GitHub (https://github.com/mhc-stat340-f2019-sec01/), where username is replaced with your GitHub user name.
+
+2) Click on the Clone or download (green) button
+
+3) Select "Use SSH" (rather than https)
+
+4) Click on the copy to clipboard button to the right of the URL
+
+\begin{figure}[!h]
+  \includegraphics{github3.png}
+\end{figure}
+
+5) Back in RStudio, click on `File`, `New Project`; `Version Control`; `Git`; then paste the repository URL 
+
+6) Press the Tab key to fill in the project directory name
+
+7) Change the "Create project as subdirectory of" value from "~" (home folder) to "~/stat340" by clicking "Browse" then creating a "stat340" folder and clicking "Choose". (I recommend this as a place to put all of your github repos for this class)
+
+8) Click on `Create Project`
+
+9) The first time you connect to github from the RStudio server, it may prompt you with a forbidding  "authenticity can't be established" message.  You should type "yes" into the box to trust this host and click "Okay".  
+
+\clearpage
+
+### Step 3: Edit a file in the repository and push it to GitHub
+
+Our goal now is to make "local" changes to the copy of the repository in RStudio, and then push those changes to GitHub.
+
+1) In the file browser in RStudio (lower right hand corner panel), click on the file named github_practice.Rmd
+
+2) Make some changes to the file (it doesn't matter what changes)
+
+3) Save that file
+
+4) Click on the "git" tab on the top right
+
+5) Check the box to the left of the file "github_practice.Rmd".  It may take an unreasonable amount of time to respond.
+
+6) Click "Commit".  It may take an unreasonable amount of time to respond.
+
+7) Add a commit message in the box on the right that opens up.  This should be a brief sentence or two describing the changes you made.  For example, for now it could be something like "minor changes to test committing"
+
+8) Click the "Commit" button.
+
+9) Click the "Push" button.
+
+10) Close the Commit window.
+
+Congrats! You've added a file.  If you refresh the webpage for the repository on GitHub (https://github.com/mhc-stat340-f2019-sec01/github-practice-username), you should see your new file listed.
+
+## Closing Thought:
+
+Learning git can feel intimidating.  It's universally agreed that using git is complicated.  However, it's also worth the effort to learn, and the sooner you start learning the better.  If you ever run into problems with using git, just let me know and I will be happy to help sort them out.

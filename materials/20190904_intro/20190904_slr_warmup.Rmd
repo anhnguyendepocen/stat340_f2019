@@ -1,0 +1,16 @@
+---
+title: "Drinking and Blood Alcohol Content - Warmup"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Study Description
+
+Many people believe that factors like a person's gender, weight, and drinking habits are more important in predicting blood alcohol content (BAC) than simply considering the number of drinks a person has consumed. To explore this, sixteen student volunteers at Ohio State University each drank a randomly assigned number of cans of beer. Half of the students identified as women and half as men; they differed in weight and drinking habits. Thirty minutes later, a police officer measured their blood alcohol content in grams of alcohol per deciliter of blood. (Please do not take inspiration from this study design.)
+
+Suppose the researchers come to you as a statistical consultant and ask you whether the data they've collected provide evidence that there is an association between the number of drinks someone has and their blood alcohol content.  They give you a spreadsheet with one row for each study participant and two variables recorded for each participant: the number of drinks they had and their blood alcohol content thirty minutes later.
+
+**What is your analysis plan?**  Describe all steps in an analysis you might conduct to answer the researchers' question.

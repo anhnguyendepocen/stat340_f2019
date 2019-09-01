@@ -10,7 +10,9 @@ For the project you will create, in groups of 2 or 3, a thorough analysis of a p
  2. An appendix containing your exploratory or preliminary analyses.  This will include:
     a. a single R markdown file (that can be knitted) and
     b. the resulting knitted pdf file
- 3. An in-class presentation.  (**Still deciding if we will do this this year.**)
+    
+    
+## Note: The remaining text below is from last year's project description.  I have left it here for your reference, but the details will likely change.  More to come in October or November.
 
 ### Deadlines
 
@@ -219,6 +221,3 @@ Your project grade makes up 20% of your final grade for the class.  Basically, w
  * Written Report:  How effectively does the written report communicate the goals, procedures, 
 and results of the study?  Are the claims adequately supported? How well is the report structured and 
 organized? Are all of the figures and tables numbered, captioned and appropriately referenced?  Does the writing style enhance what the group is trying to communicate?  How well is the report edited?  Are the statistical claims justified?
-
- * Oral Presentation: How effectively does the oral presentation communicate the goals, procedures, and results of the study? Do the slides help to illustrate the points being made by the speaker without distracting the audience?
-

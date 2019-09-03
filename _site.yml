@@ -1,4 +1,4 @@
-name: "mhc-stat140-f2018-website"
+name: "mhc-stat140-f2019-website"
 output_dir: "."
 output:
   html_document:
@@ -15,3 +15,5 @@ navbar:
       href: exams.html
     - text: "Project"
       href: project.html
+    - text: "Resources"
+      href: resources.html

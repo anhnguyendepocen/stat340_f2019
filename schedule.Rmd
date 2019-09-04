@@ -46,6 +46,8 @@ make_week_box("week1", TRUE, "Week 1: Sep 02 -- Sep 06", "
     * Warmup activity in groups: [pdf](materials/20190904_intro/20190904_slr_warmup.pdf)
     * Brief reminder of commands for simple linear regression in R: [pdf](materials/20190904_intro/201900904_SLR_summary.pdf)
     * Matrix notation for multiple regression (See Chapter 1 of ISLR and [https://en.wikipedia.org/wiki/Linear_regression#Introduction](https://en.wikipedia.org/wiki/Linear_regression#Introduction))
+        * Lecture notes: [pdf](materials/20190904_intro/20190904_lecture_notes.pdf)
+        * R code example: [Rmd](materials/20190904_intro/20190904_beer_example.Rmd)
     * Get set up with GitHub:
         * Video overview: [https://www.youtube.com/watch?v=YxZ8J2rqhEM](https://www.youtube.com/watch?v=YxZ8J2rqhEM)
         * pdf with detailed instructions: [pdf](materials/20190904_intro/Stat340-github-setup.pdf)

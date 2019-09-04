@@ -1,0 +1,46 @@
+---
+title: "20190904_beer_example"
+author: "Evan Ray"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Beer example - simple linear regression
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+beer <- read.csv("http://www.evanlray.com/data/openintro/bac.csv")
+beer
+
+ggplot(data = beer, mapping = aes(x = Beers, y = BAC)) +
+  geom_point()
+
+beer_model <- lm(BAC ~ Beers, data = beer)
+summary(beer_model)
+
+X <- model.matrix(beer_model)
+X
+
+beta_hat <- matrix(coef(beer_model))
+
+manual_fitted_values <- X %*% beta_hat
+
+R_fitted_values <- predict(beer_model)
+
+cbind(manual_fitted_values, R_fitted_values)
+
+beer <- beer %>%
+  mutate(
+    fitted = manual_fitted_values
+  )
+
+ggplot() +
+  geom_point(data = beer, mapping = aes(x = Beers, y = BAC)) +
+  geom_point(data = beer, mapping = aes(x = Beers, y = fitted), color = "red") +
+  geom_line(data = beer, mapping = aes(x = Beers, y = fitted), color = "red")
+```

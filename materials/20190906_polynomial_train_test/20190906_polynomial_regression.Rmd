@@ -80,7 +80,7 @@ quad_fit <- lm(DiveHeartRate ~ Duration + I(Duration^2), data = penguins)
 summary(quad_fit)
 ```
 
-#### 4. Write down the model that we fit
+#### 4. Write down the model that we fit, for a single observation indexed by $i$.
 
 \vspace{1in}
 
@@ -125,11 +125,11 @@ cubic_fit <- lm(DiveHeartRate ~ Duration + I(Duration^2) + I(Duration^3), data =
 summary(cubic_fit)
 ```
 
-#### 7. Write down the model that we fit
+#### 7. Write down the model that we fit, for a single observation indexed by $i$.
 
 \vspace{1in}
 
-#### 8. Write down the model that we fit, for all observations using matrix notation.
+#### 8. Write down the model matrix (or design matrix) for the model we fit, in terms of $x_{i}$.
 
 \vspace{1in}
 

@@ -144,7 +144,7 @@ ggplot(data = model_residual_summaries) +
 
 \newpage
 
-Additionally, here are the $R^2$ values for these three models as evaluated on the training data (a "testing data $R^2$" doesn't really make sense -- why?):
+Additionally, here are the training set $R^2$ values for these three models:
 
 ```{r}
 TSS <- sum((cars$MPG - mean(cars$MPG))^2)

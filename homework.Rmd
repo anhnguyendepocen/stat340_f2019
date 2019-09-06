@@ -2,8 +2,17 @@
 title: "Homework"
 ---
 
-+--------------+-----------------------------------------------+-----------+-------+
-| Assignment # | Description                                   | Due Date  | Value |
-+==============+===============================================+===========+=======+
-|    1         | To be assigned.                               |           |       |
-+--------------+-----------------------------------------------+-----------+-------+
++------------------+--------------------------------------------------------------------------------------+-------------------+----------+-----------------------+
+| Assignment       | Description                                                                          | Due Date          | Value    | Solutions             |
++==================+======================================================================================+===================+==========+=======================+
+|    0 (HW0)       | Optional Data Camp assignments.                                                      |    N/A            | 0        |  N/A                  |
+|                  |                                                                                      |                   |(optional)|                       |
+|                  | Register for our course on Data Camp at this link, and complete the assignment there:|                   |          |                       |
+|                  | https://www.datacamp.com/groups/shared_links/05f4cfe1a97b39e7a1ec3c1515946eb67771d605|                   |          |                       |
+|                  |                                                                                      |                   |          |                       |
+|                  | If you are already comfortable with R, you don't need to do this.                    |                   |          |                       |
++------------------+--------------------------------------------------------------------------------------+-------------------+----------+-----------------------+
+|    1 (HW1)       | Prerequisites and day 1.  This is just to make sure you feel comfortable with the    | Sept. 13          | 1        | Posted later.         |
+|                  | foundations.  You should have received an invitation to a GitHub repository with the |                   |          |                       |
+|                  | assignment.  Let me know if not.                                                     |                   |          |                       |
++------------------+--------------------------------------------------------------------------------------+-------------------+----------+-----------------------+

@@ -63,10 +63,7 @@ make_week_box("week1", TRUE, "Week 1: Sep 02 -- Sep 06", "
 #### Fri, Sep 06
  * **In class**, we will work on:
     * Polynomial Regression (Section 3.3 of ISLR): [pdf](materials/20190906_polynomial_train_test/20190906_polynomial_regression.pdf)
-    * Training and test sets -- why and how (Section 2.2 of ISLR)
-        * Example 1: [pdf](materials/20190906_polynomial_train_test/20190906_train_test_Example_1.pdf)
-        * Example 2: [pdf](materials/20190906_polynomial_train_test/20190906_train_test_Example_2.pdf)
-        * Example 3: [pdf](materials/20190906_polynomial_train_test/20190906_train_test_Example_2_wrapup.pdf)
+    * Motivate model selection by minimizing Residual Sum of Squares (Section 3.1 of ISLR): [pdf](materials/20190906_polynomial_train_test/20190906_train_test_Example_1.pdf)
  * **After class**, please:
     * Continue reading Chapter 1, and Sections 2.1, 2.2.1, 2.2.2, 3.1, 3.2, and 3.3 of ISLR.
     * Start on Homework 1, due Friday Sep 13; assigned on GitHub.

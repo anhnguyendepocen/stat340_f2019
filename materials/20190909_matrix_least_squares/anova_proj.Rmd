@@ -1,0 +1,74 @@
+---
+title: "Geometric View of Fitted Values in 1-way ANOVA"
+---
+
+## Set Up
+
+Suppose we have 3 observations:
+
+ * $y_1 = 1$, $x_1 = 0$ (first observation is in the first group)
+ * $y_2 = 2$, $x_2 = 1$ (second observation is in the second group)
+ * $y_3 = 3$, $x_3 = 1$ (third observation is in the second group)
+
+Our model is
+
+$$
+y_i = \beta_0 + \beta_1 x_i + \varepsilon_i \\
+\varepsilon_i \sim \text{Normal}(0, \sigma^2)
+$$
+
+The design matrix is $X = \begin{bmatrix} 1 & 0 \\ 1 & 1 \\ 1 & 1 \end{bmatrix}$
+
+The fitted values are $\hat{y} = \begin{bmatrix} 1 \\ 2.5 \\ 2.5 \end{bmatrix}$
+
+## Illustration of fitted values
+
+In the graphic below,
+
+ * The green vectors show the columns of $X$; the green plane is the column space of $X$.
+ * The blue point is the observed vector $y$
+ * The red point is the fitted vector $\hat{y}$; the red line shows the projection of $y$ into the column space of $X$.
+
+```{r, echo = FALSE, message = FALSE, warning=FALSE}
+library(rgl)
+library(mvtnorm)
+library(plyr)
+library(dplyr)
+```
+
+```{r, echo = FALSE, message = FALSE}
+X1 <- unexpanded_X <- seq(from = 0, to = 3, length = 101)
+X2 <- unexpanded_Y <- seq(from = 0, to = 3, length = 101)
+plot_df <- as.data.frame(expand.grid(X = unexpanded_X, Y = unexpanded_Y))
+
+plot_df$Z <- plot_df$Y
+
+#color_n <- 1000 # number of colors used
+
+joint_density_colorlut <- rainbow(1000, start = 0, end = 1) # height color lookup table
+joint_density_col <- rep(joint_density_colorlut[333], nrow(plot_df))
+
+junk <- open3d()
+z_max <- max(plot_df$Z)
+#plot3d(X1, X2, xlim=c(0, 3), ylim=c(0, 3), zlim=c(0, z_max), zlab="obs. 3", xlab = "obs. 1", ylab = "obs. 2", mouseMode = "zAxis", type = "s")
+plot3d(X1, X2, xlim=c(0, 3), ylim=c(0, 3), zlim=c(0, z_max), zlab="obs. 3", xlab = "obs. 1", ylab = "obs. 2", mouseMode = "zAxis")
+surface3d(X1, X2, plot_df$Z, alpha = 0.3, col = joint_density_col)
+segments3d(rbind(matrix(rep(0, 3), nrow = 1), matrix(c(0, 1, 1), nrow = 1)), col = joint_density_colorlut[333], lwd = 3.0)
+segments3d(rbind(matrix(rep(0, 3), nrow = 1), matrix(c(1, 1, 1), nrow = 1)), col = joint_density_colorlut[333], lwd = 3.0)
+points3d(matrix(1:3, nrow = 1), col = joint_density_colorlut[666], size = 8.0)
+segments3d(rbind(matrix(c(1, 2, 3), nrow = 1), matrix(c(1, 2.5, 2.5), nrow = 1)), col = joint_density_colorlut[1000], lwd = 3.0)
+points3d(matrix(c(1, 2.5, 2.5), nrow = 1), col = joint_density_colorlut[1000], size = 8.0)
+
+view3d(userMatrix = structure(c(0.476727247238159, -0.212129727005959, 0.853072345256805, 
+0, 0.879015803337097, 0.106304869055748, -0.464790940284729, 
+0, 0.00791021343320608, 0.971442461013794, 0.237143740057945, 
+0, 0, 0, 0, 1), .Dim = c(4L, 4L)))
+
+
+#plotids <- with(iris, plot3d(Sepal.Length, Sepal.Width, Petal.Length, 
+#                  type="s", col=as.numeric(Species)))
+rglwidget(elementId = "plot_projection", width = 1000, height = 700)
+```
+
+
+

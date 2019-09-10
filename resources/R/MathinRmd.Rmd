@@ -50,7 +50,9 @@ Here are some common mathematical things you might use in statistics
 <tr><td>$\hat{x}$</td><td> `$\hat{x}$` </td> </tr>
 <tr><td>$\frac{a}{b}$ </td><td> `$\frac{a}{b}$`</td> </tr>
 <tr><td>$X \sim \text{Normal}(\mu, \sigma)$</td><td> `$X \sim \text{Normal}(\mu, \sigma)$`</td> </tr>
-<tr><td>$\begin{bmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \end{bmatrix}$</td><td> `$\begin{bmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \end{bmatrix}$`</td> </tr>
+<tr><td>$\begin{bmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \end{bmatrix}$</td><td> `$\begin{bmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \end{bmatrix}$` </td> </tr>
+<tr><td>$\vdots$</td><td> `$\vdots$`</td> </tr>
+<tr><td>$\ddots$</td><td> `$\ddots$`</td> </tr>
 </table>
 
 ## Greek Letters

@@ -1,0 +1,194 @@
+---
+title: "Design Matrices without Full Column Rank"
+output: pdf_document
+---
+
+```{r setup, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+options(width = 200)
+library(dplyr)
+library(ggplot2)
+library(mosaicData)
+```
+
+## The Problem
+
+In our derivation of the least squares estimates for linear regression, we took the derivatives of the residual sum of squares with respect to each of $\beta_0, \ldots, \beta_p$, set the results equal to 0, and figured out how to write the results in terms of matrices.  We arrived at this point:
+
+$$(X'X) \hat{\beta} = X' y$$
+
+In order to solve for beta, we multiplied on the left by $(X'X)^{-1}$ to obtain
+
+$$\hat{\beta} = (X'X)^{-1} X' y$$
+
+This is only possible if $X'X$ has full rank, which is the case if and only if $X$ has full column rank.
+
+**So, what are some examples of settings where $X$ *doesn't* have full rank?**
+
+## Example 1: Not enough distinct values of $x$
+
+Suppose that we have the following data set, and we want to fit a simple linear regression model:
+
+```{r, echo = FALSE}
+example_data <- data.frame(
+  x = c(2, 2, 2),
+  y = c(2, 4, 5)
+)
+```
+
+```{r, fig.width=5, fig.height = 3}
+example_data
+
+ggplot(data = example_data, mapping = aes(x = x, y = y)) +
+  geom_point() +
+  xlim(c(0, 5)) +
+  ylim(c(0, 5)) +
+  theme_bw()
+```
+
+#### What happens if we try to do estimation?
+
+```{r}
+lm_fit <- lm(y ~ x, data = example_data)
+summary(lm_fit)
+```
+
+```{r}
+X <- model.matrix(lm_fit)
+t(X) %*% X
+solve(t(X) %*% X)
+```
+
+#### What's going on?
+
+ * There are many possible lines that fit the data
+ * The slope and intercept parameters are not **identifiable** from the data we have
+
+```{r, fig.width=5, fig.height = 2.75}
+ggplot(data = example_data, mapping = aes(x = x, y = y)) +
+  geom_point() +
+  geom_abline(intercept = 3.6667, slope = 0, size = 1.5) +
+  geom_abline(intercept = 2.6667, slope = 0.5, color = "cornflowerblue", linetype = 2, size = 1.5) +
+  geom_abline(intercept = 7.6667, slope = -2, color = "orange", linetype = 3, size = 1.5) +
+  xlim(c(0, 5)) +
+  ylim(c(0, 5)) +
+  theme_bw()
+```
+
+Notice that the fitted values are the same for all of these three lines:
+
+```{r}
+beta_hat1 <- matrix(c(3.6667, 0))
+y_hat1 <- X %*% beta_hat1
+y_hat1
+
+beta_hat2 <- matrix(c(2.6667, 0.5))
+y_hat2 <- X %*% beta_hat2
+y_hat2
+
+beta_hat3 <- matrix(c(7.6667, -2))
+y_hat3 <- X %*% beta_hat3
+y_hat3
+```
+
+In turn, the residual sums of squares are the same for all three lines too:
+
+```{r}
+sum((example_data$y - y_hat1)^2)
+sum((example_data$y - y_hat2)^2)
+sum((example_data$y - y_hat3)^2)
+```
+
+\newpage
+
+## Example 2: Multiple Regression with Redundant Covariates
+
+The Current Population Survey (CPS) is used to supplement census information between census years. These data consist of a random sample of persons from the 1985 CPS, with information on wages and other characteristics of the workers, including sex, number of years of education, years of work experience, occupational status, region of residence and union membership.
+
+Suppose we fit a model for `wage` (in US dollars per hour) based on the following explanatory variables:
+
+ * `educ` number of years of education
+ * `age` age in years
+ * `exper` number of years of work experience (inferred from `age` and `educ`)
+ * `married` a factor with levels `Married`, `Single`
+ * `sector` a factor with levels `clerical`, `const`, `manag`, `manuf`, `other`, `prof`, `sales`, `service`
+
+```{r, echo = FALSE}
+CPS85 <- mosaicData::CPS85[-350, ] %>%
+  select(wage, educ, age, exper, married, sector)
+```
+
+```{r}
+head(CPS85)
+
+lm_fit <- lm(wage ~ educ + age + exper + married + sector, data = CPS85)
+summary(lm_fit)
+```
+
+```{r}
+X <- model.matrix(lm_fit)
+head(X)
+
+solve(t(X) %*% X)
+```
+
+#### What's going on?
+
+`exper` was inferred from `age` and `educ`, assuming everyone started school at age 6 and started getting job experience immediately after leaving school:
+
+```{r}
+exper_is_made_up <- cbind(
+  CPS85$exper,
+  CPS85$age - CPS85$educ - 6
+)
+
+head(exper_is_made_up)
+```
+
+This means the fourth column of X is equal to a linear combination of the first three columns:
+
+```{r}
+X_is_not_full_rank <- cbind(
+  X[, 3] - X[, 2] - 6 * X[, 1],
+  X[, 4]
+)
+head(X_is_not_full_rank)
+```
+
+\newpage
+
+Once again, this means that we can get the same fitted values (and therefore the same residual sum of squares) from different coefficients for those variables:
+
+```{r, echo = FALSE}
+beta_hat1 <- matrix(coef(lm_fit))
+beta_hat1[4, 1] <- 0
+
+beta_hat2 <- beta_hat1
+beta_hat2[1:4, 1] <- c(-3.74940308, 0.74729196, 0.09435882, 0.0)
+beta_hat2[4, 1] <- beta_hat2[4, 1] + 1
+```
+
+```{r}
+cbind(beta_hat1, beta_hat2)
+
+y_hat1 <- X %*% beta_hat1
+y_hat2 <- X %*% beta_hat2
+
+same_fitted_values <- cbind(y_hat1, y_hat2)
+head(same_fitted_values)
+```
+
+## Summary
+
+A few ways to think about when you might have a design matrix that isn't full rank:
+
+1) There is some redundancy in the explanatory variables
+
+2) There isn't enough information in your data to learn about the relationship you're interested in (e.g. we can't separate the effects of several closely related variables because they are linear functions of each other).
+
+3) Multiple different coefficient values can explain the observed data equally as well (same fitted values, so same RSS).
+    * The model parameters are not **identifiable**.
+
+Roughly, model parameters are identifiable if there is a unique set of parameter values that explains the observed data best.
+
+In the case of linear regression, model parameters are identifiable if there is a unique set of parameter values that minimize RSS.

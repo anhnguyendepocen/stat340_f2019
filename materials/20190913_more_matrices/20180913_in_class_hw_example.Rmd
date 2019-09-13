@@ -1,0 +1,47 @@
+---
+title: "Example of fitted values and orthogonal projections"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width = 200)
+```
+
+**This example will be due as part of your next homework assignment.  We're just getting a start on it in class together.**
+
+### Model Statement
+
+Suppose we use the model
+\begin{align*}
+y_i &= \beta + \varepsilon_i \\
+\varepsilon_i &\sim \text{Normal}(0, \sigma^2)
+\end{align*}
+
+Also suppose we have $n = 2$ observations, and the observed response vector is $y = \begin{bmatrix} 1 \\ 2 \end{bmatrix}$.
+
+#### (a) What is the design matrix $X$?
+
+\vspace{1in}
+
+#### (b) Find the hat matrix $H$.
+
+\vspace{2in}
+
+#### (c) Find the fitted values $\hat{y} = H y$.
+
+\vspace{2in}
+
+#### (d) Draw a figure showing $\mathcal{C}(X)$ (it is a line), $y$, and $\hat{y}$, clearly labelling each.  Connect $y$ and $\hat{y}$ with a line segment, and by drawing an appropriate right angle on your figure, illustrate that $\hat{y}$ is the orthogonal projection of $y$ onto $\mathcal{C}(X)$.
+
+```{r, echo = FALSE, fig.width=4, fig.height=4, warning=FALSE}
+library(ggplot2)
+ggplot() +
+  scale_x_continuous(limits = c(-3, 3)) +
+  scale_y_continuous(limits = c(-3, 3)) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  xlab("Observation 1") +
+  ylab("Observation 2") +
+  theme_bw()
+```

@@ -83,18 +83,25 @@ make_week_box("week2", TRUE, "Week 2: Sep 09 -- Sep 13", "
 
 #### Wed, Sep 11
  * **In class**, we will work on:
+    * Finish second example from last class.
     * Review of orthogonal projections
+        * Lecture notes: [pdf](materials/20190909_matrix_least_squares/projections_review.pdf)
     * Matrix/linear algebra view of fitted values
+        * $H = X (X'X)^{-1} X'$ is the hat matrix.
+        * $\\hat{y} = X \\hat{\\beta} = Hy$ is the orthogonal projection of y into the column space of $X$.
         * ANOVA Example: [html](materials/20190909_matrix_least_squares/anova_proj.html)
-    * Residual Sum of Squares (RSS), Total Sum of Squares (TSS) (Section 3.1 of ISLR)
  * **After class**, please:
-    * Finish today's lab if you didn't have time to finish it in class.
 
 
 #### Fri, Sep 13
  * **In class**, we will work on:
-    * Mean Squared Error and the Bias/Variance trade-off (Sections 2.1.1 and 2.2.2 in ISLR)
+    * R commands for doing matrix operations [.R](materials/20190913_more_matrices/R_matrix_commands.R)
+    * What it means for X to not have full column rank
+        * Handout: [pdf](materials/20190913_more_matrices/20180913_X_rank.pdf)
+        * Interactive plots for first example: [html](materials/20190913_more_matrices/RSS_badness.html)
+    * If time, start a worksheet that will be part of your next homework assignment: [pdf](materials/20190913_more_matrices/20180913_in_class_hw_example.pdf)
  * **After class**, please:
+    * Do HW2, due Friday Sep 20, to be assigned on GitHub some time Saturday
 ")
 ```
 
@@ -102,6 +109,9 @@ make_week_box("week2", TRUE, "Week 2: Sep 09 -- Sep 13", "
 make_week_box("week3", TRUE, "Week 3: Sep 16 -- Sep 20", "
 #### Mon, Sep 16
  * **In class**, we will work on:
+    * Train/test splits
+    * Mean Squared Error and the Bias/Variance trade-off (Sections 2.1.1 and 2.2.2 in ISLR)
+    * Start on cross-validation for model selection?
  * **After class**, please:
 
 

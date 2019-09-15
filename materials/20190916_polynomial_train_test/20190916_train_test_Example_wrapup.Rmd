@@ -24,20 +24,23 @@ library(gridExtra) # for grid.arrange, which arranges the plots next to each oth
 library(polynom) # for obtaining the third polynomial fit below
 
 cars <- read_csv("http://www.evanlray.com/data/sdm4/Cars.csv")
+train_inds <- c(1, 6, 8, 14, 15, 16, 21, 32, 33, 37)
+train_cars <- cars %>% slice(train_inds) # 10 observations to use in getting fits below.
+
 cars$train_test <- "test"
-cars$train_test[c(1, 6, 8, 14, 15, 16, 21, 32, 33, 37)] <- "train"
+cars$train_test[train_inds] <- "train"
 
 ggplot() + 
   geom_point(data = cars, mapping = aes(x = Weight, y = MPG, color = train_test)) +
   scale_color_manual(breaks = c("test", "train"), values = c("black", "red"))
 ```
 
+\newpage
+
 Here are the plots again, over both the training and test sets.  The estimated curves are shown in red, to indicate that they were fit to the training data set.
 
 ```{r, fig.height = 3.75, echo = FALSE, message=FALSE, warning=FALSE}
-cars_subset <- cars %>% filter(train_test == "train")
-
-lm1 <- lm(MPG ~ Weight, data = cars_subset)
+lm1 <- lm(MPG ~ Weight, data = train_cars)
 predict_1 <- function(x) {
   predict(lm1, data.frame(Weight = x))
 }
@@ -48,7 +51,7 @@ p1 <- ggplot(data = cars, mapping = aes(x = Weight, y = MPG, color = train_test)
   stat_function(fun = predict_1, color = "red") +
   ggtitle("linear fit")
 
-lm2 <- lm(MPG ~ Weight + I(Weight^2), data = cars_subset)
+lm2 <- lm(MPG ~ Weight + I(Weight^2), data = train_cars)
 predict_2 <- function(x) {
   predict(lm2, data.frame(Weight = x))
 }
@@ -61,7 +64,7 @@ p2 <- ggplot(data = cars, mapping = aes(x = Weight, y = MPG, color = train_test)
 
 # Our degree 9 polynomial fit is not obtained from lm (although you could do that too)
 # You don't need to know how to use the poly.calc function.
-fit9 <- poly.calc(cars_subset$Weight, cars_subset$MPG)
+fit9 <- poly.calc(train_cars$Weight, train_cars$MPG)
 predict_9 <- as.function(fit9)
 
 p3 <- ggplot(data = cars, mapping = aes(x = Weight, y = MPG, color = train_test)) + 
@@ -81,95 +84,53 @@ grid.arrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
 ```
 
 
-Below is R code for calculating and plotting:
+Below is R code for calculating and plotting the Mean Squared Error (MSE), separately for the train and test sets for each of our three candidate models:
 
- * the mean squared error, separately for the train and test sets for each of our three candidate models; and
- * estimates of the residual standard error based on the train and test sets for each of our three candidate models.
+$$MSE = \frac{1}{n}\sum_{i=1}^n (y_i - \hat{y})^2 = \frac{1}{n}SSR$$
+
+The MSE contains the exact same information as SSR but doesn't grow with the sample size.  This means it's more comparable across data sets of different sizes.
 
 ```{r}
-#' Calculate the Sum of Squared Residuals, SSR
-#' 
-#' @param x a vector of residuals
-#' 
-#' @return sum of squared residuals
-SSR <- function(x) {
-  sum(x^2)
-}
-
-#' Calculate the Mean Squared Error (MSE)
-#' 
-#' @param x a vector of residuals
-#' 
-#' @return mean of squared residuals
-MSE <- function(x) {
-  mean(x^2)
-}
-
-model_residual_summaries <- cars %>%
-  transmute(
-    train_test = train_test,
+cars_residuals <- cars %>%
+  mutate(
     residual_linear = MPG - predict_1(Weight),
     residual_quadratic = MPG - predict_2(Weight),
     residual_degree9 = MPG - predict_9(Weight)
-  ) %>%
-  group_by(train_test) %>%
-  summarize_all(
-    .funs = c("SSR", "MSE")
-  ) %>%
-  gather("condition", "value", -train_test) %>%
-  mutate(
-    condition = substr(condition, 10, nchar(condition))
-  ) %>%
-  separate(col = condition, into = c("model", "summary"), sep = "_") %>%
-  mutate(
-    model = factor(model, levels = c("linear", "quadratic", "degree9"), ordered = TRUE)
+  )
+
+model_residual_summaries <- 
+  rbind(
+    cars_residuals %>%
+      dplyr::group_by(train_test) %>%
+      dplyr::summarize(
+        MSE = mean(residual_linear^2),
+      ) %>%
+      dplyr::mutate(
+        degree = "1"
+      ),
+    cars_residuals %>%
+      dplyr::group_by(train_test) %>%
+      dplyr::summarize(
+        MSE = mean(residual_quadratic^2),
+      ) %>%
+      dplyr::mutate(
+        degree = "2"
+      ),
+    cars_residuals %>%
+      dplyr::group_by(train_test) %>%
+      dplyr::summarize(
+        MSE = mean(residual_degree9^2),
+      ) %>%
+      dplyr::mutate(
+        degree = "9"
+      )
   )
 
 model_residual_summaries
 ```
-\newpage
 
-```{r, fig.height=3.5}
+```{r, fig.height=3}
 ggplot(data = model_residual_summaries) +
-  geom_point(mapping = aes(x = model, y = value)) + 
-  facet_grid(train_test ~ summary, scales = "free") +
-  ggtitle("results, regular vertical axis scale")
-
-ggplot(data = model_residual_summaries) +
-  geom_point(mapping = aes(x = model, y = value)) + 
-  facet_grid(train_test ~ summary, scales = "free") +
-  scale_y_log10() + 
-  ggtitle("results, logarithmic vertical axis scale")
-```
-
-\newpage
-
-Additionally, here are the training set $R^2$ values for these three models:
-
-```{r}
-TSS <- sum((cars$MPG - mean(cars$MPG))^2)
-
-# R^2 linear regression
-RSS_linear <- model_residual_summaries %>%
-  filter(model == "linear", summary == "SSR", train_test == "train") %>%
-  select(value) %>%
-  as.numeric()
-
-1 - RSS_linear / TSS
-
-# R^2 quadratic regression
-RSS_quadratic <- model_residual_summaries %>%
-  filter(model == "quadratic", summary == "SSR", train_test == "train") %>%
-  select(value) %>%
-  as.numeric()
-
-1 - RSS_quadratic / TSS
-
-# R^2 degree 9 polynomial regression
-RSS_degree9 <- model_residual_summaries %>%
-  filter(model == "degree9", summary == "SSR", train_test == "train") %>%
-  select(value) %>%
-  as.numeric()
-
-1 - RSS_degree9 / TSS
+  geom_point(mapping = aes(x = degree, y = MSE)) + 
+  facet_wrap( ~ train_test, scales = "free")
 ```

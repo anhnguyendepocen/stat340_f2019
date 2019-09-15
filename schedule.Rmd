@@ -71,7 +71,7 @@ make_week_box("week1", FALSE, "Week 1: Sep 02 -- Sep 06", "
 ```
 
 ```{r, echo = FALSE, results='asis'}
-make_week_box("week2", TRUE, "Week 2: Sep 09 -- Sep 13", "
+make_week_box("week2", FALSE, "Week 2: Sep 09 -- Sep 13", "
 #### Mon, Sep 09
  * **In class**, we will work on:
     * Multiple regression in matrix notation: [pdf](materials/20190909_matrix_least_squares/20180909_matrix_formulation_multiple_reg.pdf)
@@ -91,7 +91,7 @@ make_week_box("week2", TRUE, "Week 2: Sep 09 -- Sep 13", "
         * $\\hat{y} = X \\hat{\\beta} = Hy$ is the orthogonal projection of y into the column space of $X$.
         * ANOVA Example: [html](materials/20190909_matrix_least_squares/anova_proj.html)
  * **After class**, please:
-
+    * Work on HW1, due Friday Sep 13
 
 #### Fri, Sep 13
  * **In class**, we will work on:
@@ -110,18 +110,20 @@ make_week_box("week3", TRUE, "Week 3: Sep 16 -- Sep 20", "
 #### Mon, Sep 16
  * **In class**, we will work on:
     * Train/test splits
-    * Mean Squared Error and the Bias/Variance trade-off (Sections 2.1.1 and 2.2.2 in ISLR)
-    * Start on cross-validation for model selection?
+    * Lab 01, about train/test splits
  * **After class**, please:
-
+    * Read Sections 5.1.1 through 5.1.4 of ISLR
+    * Work on HW2, due Friday Sep 20
 
 #### Wed, Sep 18
  * **In class**, we will work on:
+    * Cross-validation
  * **After class**, please:
-
+    * Work on HW2, due Friday Sep 20
 
 #### Fri, Sep 20
  * **In class**, we will work on:
+    * The Bias-Variance trade-off
  * **After class**, please:
 ")
 ```

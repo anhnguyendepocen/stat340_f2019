@@ -3,9 +3,10 @@
 # c(): create a vector
 # cbind(): bind vectors together as columns of a matrix
 # t(): transpose of a matrix
-# %*% matrix multiplication
+# %*%: matrix multiplication
 # solve(): find the inverse of a matrix
-# matrix(): directly create a matrix from specified values.  By default, will be a matrix with 1 column.
+# matrix(): directly create a matrix from specified values.
+#   By default, will be a matrix with 1 column.
 
 # create X
 X <- cbind(
@@ -22,6 +23,10 @@ solve(t(X) %*% X)
 
 # suppose y_1 = 1, y_2 = 2, y_3 = 3
 y <- matrix(c(1, 2, 3))
+
+# not used for this, but helpful to know:
+example <- matrix(1:6, nrow = 2, ncol = 3)
+example
 
 # beta hat computed using matrices
 beta_hat <- solve(t(X) %*% X) %*% t(X) %*% y

@@ -16,3 +16,5 @@ title: "Homework"
 |                  | foundations.  You should have received an invitation to a GitHub repository with the |                   |          |                       |
 |                  | assignment.  Let me know if not.                                                     |                   |          |                       |
 +------------------+--------------------------------------------------------------------------------------+-------------------+----------+-----------------------+
+|    2 (HW2)       | Linear Algebra view of linear regression models.                                     | Sept. 20          | 1        | Posted later.         |
++------------------+--------------------------------------------------------------------------------------+-------------------+----------+-----------------------+

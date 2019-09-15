@@ -163,9 +163,11 @@ Once again, this means that we can get the same fitted values (and therefore the
 beta_hat1 <- matrix(coef(lm_fit))
 beta_hat1[4, 1] <- 0
 
+lm_fit2 <- lm(wage ~ educ + exper + married + sector, data = CPS85)
 beta_hat2 <- beta_hat1
-beta_hat2[1:4, 1] <- c(-3.74940308, 0.74729196, 0.09435882, 0.0)
-beta_hat2[4, 1] <- beta_hat2[4, 1] + 1
+beta_hat2[1:2, 1] <- coef(lm_fit2)[1:2]
+beta_hat2[3, 1] <- 0
+beta_hat2[4, 1] <- coef(lm_fit2)[3]
 ```
 
 ```{r}

@@ -109,7 +109,9 @@ make_week_box("week2", FALSE, "Week 2: Sep 09 -- Sep 13", "
 make_week_box("week3", TRUE, "Week 3: Sep 16 -- Sep 20", "
 #### Mon, Sep 16
  * **In class**, we will work on:
-    * Train/test splits
+    * Train/test splits:
+        * Motivating example: [pdf](materials/20190916_polynomial_train_test/20190916_train_test_Example.pdf)
+        * Example wrap up: [pdf](materials/20190916_polynomial_train_test/20190916_train_test_Example_wrapup.pdf)
     * Lab 01, about train/test splits
  * **After class**, please:
     * Read Sections 5.1.1 through 5.1.4 of ISLR
@@ -117,13 +119,16 @@ make_week_box("week3", TRUE, "Week 3: Sep 16 -- Sep 20", "
 
 #### Wed, Sep 18
  * **In class**, we will work on:
-    * Cross-validation
+    * For loops in R: [pdf](materials/20190918_for_loops_crossvalidation/for_loops.pdf)
+    * Cross-validation: [pdf](materials/20190918_for_loops_crossvalidation/20190918_crossvalidation.pdf)
+    * Time for Lab 1 (individual GitHub repositories) and Lab 2 (https://github.com/mhc-stat340-f2019-sec01/Lab02)
  * **After class**, please:
     * Work on HW2, due Friday Sep 20
 
 #### Fri, Sep 20
  * **In class**, we will work on:
-    * The Bias-Variance trade-off
+    * The Bias-Variance trade-off?
+    * Work on labs
  * **After class**, please:
 ")
 ```

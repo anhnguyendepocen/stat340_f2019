@@ -1,5 +1,5 @@
 ---
-title: "Model Comparison -- Example 2 Wrap-Up"
+title: "Model Comparison Example Wrap-Up"
 output: pdf_document
 ---
 

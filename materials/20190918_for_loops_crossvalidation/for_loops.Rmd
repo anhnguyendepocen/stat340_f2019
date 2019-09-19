@@ -1,0 +1,108 @@
+---
+title: "For Loops in R"
+output:
+  pdf_document:
+    keep_tex: false
+header-includes:
+   - \usepackage{booktabs}
+geometry: margin=1.5cm
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+## Additional reading/source for this handout
+
+https://r4ds.had.co.nz/iteration.html
+
+## Goal: we want to repeat a task many times
+
+## Example: Mean of each variable in a data frame
+
+The `mtcars` data set comes with R and contains observations of 11 numeric variables for 32 cars.
+
+```{r}
+head(mtcars)
+dim(mtcars)
+ncol(mtcars)
+```
+
+Let's find the mean of each of those variables.
+
+
+## Overall structure
+
+```{r, eval = FALSE}
+1. Allocate space where results will be stored, if necessary
+2. for(object in vector_of_objects) {
+    a. do some stuff based on object
+    b. potentially, save some results in the space allocated in step 1
+}
+```
+
+### In our example:
+
+```
+1. Allocate space to store the column means
+2. For each column in the `mtcars` data frame,
+    a. Find the mean for that column
+    b. Store the column mean in the appropriate entry of the space allocated in step 1.
+```
+
+The above is probably a minimal level of detail for pseudo code; you could add in some more detail if you want.  Below are three ways of actually implementing the algorithm above in R.
+
+\newpage
+
+### Approach 1:
+
+```{r}
+var_means <- vector("numeric", ncol(mtcars)) # 1. allocate space for results
+for(i in seq_len(ncol(mtcars))) { # 2. set up for loop
+  print(i) # not an important part of our work; just showing what's happening
+  var_means[[i]] <- mean(mtcars[[i]]) # a. and b. do something based on i, save results
+}
+
+var_means
+```
+
+### Approach 2: 
+
+Basically the same thing, a few details changed:
+
+```{r}
+#1. allocate space to store results
+var_means_df <- data.frame(
+  var_name = rep(NA, ncol(mtcars)),
+  var_mean = rep(NA, ncol(mtcars))
+)
+
+for(i in seq_along(mtcars)) { # 2. set up for loop
+  print(i) # not an important part of our work; just showing what's happening
+  var_means_df$var_name[i] <- colnames(mtcars)[i] # a. and b. do something based on i, save results
+  var_means_df$var_mean[i] <- mean(mtcars[[i]]) # a. and b. do something based on i, save results
+}
+
+var_means_df
+```
+
+### Approach 3
+
+More of the same, but iterating over strings instead of integers
+
+```{r}
+#1. allocate space to store results
+var_means_df_2 <- data.frame(
+  var_name = colnames(mtcars),
+  var_mean = rep(NA, ncol(mtcars))
+)
+
+for(var_name in colnames(mtcars)) { # 2. set up for loop
+  print(var_name) # not an important part of our work; just showing what's happening
+  save_ind <- which(var_means_df_2$var_name == var_name) # a. and b. do something based on i, save results
+  
+  var_means_df_2[save_ind, "var_mean"] <- mean(mtcars[[var_name]]) # a. and b. do something based on i, save results
+}
+
+var_means_df_2
+```

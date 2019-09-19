@@ -78,16 +78,4 @@ Then answer the questions below:
 
 #### Being as specific and concrete as possible, write down a rule for selecting your preferred model based only on *visual* characteristics of the plot.  (That is, your rule should not involve any calculations of numeric quantities).
 
-\vspace{2cm}
-
-#### Being as specific and concrete as possible, write down a rule for selecting your preferred model based only on a *quantitative* summary of the data.  You can describe how you would calculate your numeric summary of the data; if you'd like you can write down a formula.
-
-
-
-
- 
- 
- 
- 
- 
  

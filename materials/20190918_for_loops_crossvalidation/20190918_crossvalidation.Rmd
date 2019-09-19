@@ -1,0 +1,444 @@
+---
+title: "Model Selection and Tuning (Part 1: Cross-Validation)"
+output:
+  pdf_document:
+    keep_tex: true
+geometry: margin=1.5cm
+header-includes:
+   - \usepackage{booktabs}
+   - \usepackage{multicol}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, warning=FALSE, message=FALSE, echo = FALSE}
+library(FNN)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(gridExtra)
+library(purrr)
+library(readr)
+```
+
+Note 1: Images throughout this document illustrating train/validation/test sets are adapted from an image used at http://www.ds100.org
+
+Note 2: The use of the terms as I'm defining them today isn't completely consistent.  I'm describing the most common usage.
+
+## (Previously) Train-Test Split:
+
+To get accurate measures of model performance, hold out a test set:
+
+\includegraphics{train_test_split_ds100.png}
+
+1. Training set:
+    * Used for model estimation
+2. Test set:
+    * Used to evaluate model performance
+
+## Validation Split:
+
+The model estimation process often involves two distinct parts:
+
+1. Model Training
+    * For example, parameter estimation via ordinary least squares for a linear regression model
+2. Model and "Tuning Parameter" Selection
+    * Which explanatory variables should be used?
+    * What polynomial degrees and interactions should be included?
+
+**Both of these steps go into determining our final model.  If we use test data in either step, performance on the test set will not be a reliable indicator of model performance!**
+
+To compare and select models, we need a way to estimate test set error **without looking at the test set data**.
+
+Idea: introduce a third split of the data: **validation set**
+
+\includegraphics{train_val_test_split_ds100.png}
+
+Now, as part of model selection and estimation, we use:
+
+1. Training set
+    * actually used for estimating model parameters
+2. Validation set
+    * for comparing a set of candidate models (e.g. different sets of explanatory variables, different polynomial degree) and picking one (or a small number) to use
+
+Only after selecting one (or a small number of) final model(s) do we use the test set data:
+
+3. Test set
+    * for final evaluation of performance of a small number of models
+
+Typically, the selected models from step 2 will be re-fit to the combined training/validation data before looking at test set performance.
+
+Once you have looked at performance on the test set, you are done!  You can't go back!  If you make any more changes to the model, any future evaluations of performance on the test set are invalid!  (Or you need an entirely new test set.)
+
+### R Commands for getting a train/test or validation split.
+
+Two basic steps to getting a data split:
+
+1. Choose some indices to use in each part of the split.
+    * We could use `sample` for this.
+    * `caret::createDataPartition` is another choice: does stratified sampling to ensure test and train sets have similar sets of values for the response.  But this can result in partitions that are not exactly the sizes you asked for.
+2. Subset the data to the selected indices.
+    * Could use square bracket notation.
+    * I'll suggest using `dplyr::slice` since it can be more easily inserted into a sequence of steps with the pipe (`%>%`).
+
+\newpage
+
+### Example: Polynomial Regression with the cars data
+
+```{r, message=FALSE, warning=FALSE}
+# Read in data and take a look
+cars <- read_csv("http://www.evanlray.com/data/sdm4/Cars.csv")
+head(cars)
+```
+
+Recall we are treating `Weight` as the explanatory (X) variable and `MPG` as the response (Y).
+
+#### Step 1: Split the data into training, validation, and test sets
+
+```{r, message=FALSE}
+library(caret)
+
+# Set seed for reproducibility
+set.seed(7304) # generated at random.org
+
+# Divide into "estimation" (will be used for all parts of estimation) and test sets
+# "Estimation set" is not official terminology, but I needed something to call this...
+train_val_inds <- caret::createDataPartition(
+  y = cars$MPG, # response variable as a vector
+  p = 0.8 # approximate proportion of data used for training and validation
+)
+# any observations not listed below will be part of the test set.
+train_val_inds
+
+cars_train_val <- cars %>% slice(train_val_inds[[1]])
+cars_test <- cars %>% slice(-train_val_inds[[1]])
+
+# Further divide the "estimation" set into a training part and a validation part.
+train_inds <- caret::createDataPartition(
+  y = cars_train_val$MPG, # response variable as a vector -- note, splitting up cars_train_val
+  p = 0.8 # approximate proportion of estimation-phase data used for training
+)
+
+cars_train <- cars_train_val %>% slice(train_inds[[1]])
+cars_val <- cars_train_val %>% slice(-train_inds[[1]])
+```
+
+\newpage
+
+Here's what we've achieved so far:
+
+```{r}
+nrow(cars)
+nrow(cars_train)
+nrow(cars_val)
+nrow(cars_test)
+
+ggplot() +
+  geom_point(data = cars_train, mapping = aes(x = Weight, y = MPG)) +
+  geom_point(data = cars_val, mapping = aes(x = Weight, y = MPG), color = "cornflowerblue", shape = 2) +
+  geom_point(data = cars_test, mapping = aes(x = Weight, y = MPG), color = "orange", shape = 3)
+```
+
+\newpage
+
+#### Step 2: Fit all candidate models to the training data and compare performance on validation data.  Pick a small number of models for which to look at test set performance.
+
+Here, we get validation set MSE for each candidate model:
+
+```{r}
+train_val_mse <- data.frame(
+  poly_degree = seq_len(7),
+  train_mse = NA,
+  val_mse = NA
+)
+
+for(degree in seq_len(7)) {
+  fit <- lm(MPG ~ poly(Weight, degree), data = cars_train) # note fit to train data!
+
+  train_resids <- cars_train$MPG - predict(fit) # by default, predictions are for training set
+  train_val_mse$train_mse[degree] <- mean(train_resids^2)
+  
+  val_resids <- cars_val$MPG - predict(fit, cars_val) # here, get predictiosn for validation set
+  train_val_mse$val_mse[degree] <- mean(val_resids^2)
+}
+```
+
+
+Here's a plot of the results:
+
+```{r}
+# Make a plot of the results!
+ggplot(data = train_val_mse, mapping = aes(x = poly_degree, y = val_mse)) +
+  geom_line() +
+  geom_point()
+```
+
+According to the validation set, our best models have degree 3 and 5.  Only now, evaluate on test set data!
+
+\newpage
+
+## Step 3: Find test set performance for chosen model(s)
+
+```{r}
+fit <- lm(MPG ~ poly(Weight, 3), data = cars_train_val) # note fit to combined train_val data!
+test_resids <- cars_test$MPG - predict(fit, newdata = cars_test) # based on predictions for test set
+mean(test_resids^2)
+
+fit <- lm(MPG ~ poly(Weight, 5), data = cars_train_val) # note fit to combined train_val data!
+test_resids <- cars_test$MPG - predict(fit, newdata = cars_test) # based on predictions for test set
+mean(test_resids^2)
+```
+
+\newpage
+
+## Cross-Validation
+
+A limitation of the validation approach is that it doesn't use all of the available "estimation data" for either training or validation.  Above, we made a decision about what model to choose based on performance for a validation set of only 4 observations!
+
+Enter $k$-fold cross-validation:
+
+\includegraphics{train_xval_test_split_ds100.png}
+
+ * Partition the "estimation data" into $k$ **folds** (groups of approximately equal size; above, $k = 5$)
+ * For each fold, get an estimate of model performance using that fold as a validation set and the remaining folds put together as a training set
+ * Overall cross-validated performance estimate is average validation MSE across the $k$ folds
+
+$CV_{(k)} = \frac{1}{k} \sum_{i = 1}^k \text{MSE}_i$
+
+\newpage
+
+### Example with cars data
+
+#### Step 1: Split into training and test sets, obtain validation folds
+
+Note that unlike above, I'm not actually splitting the data according to the validation folds yet.
+
+```{r}
+# Set seed for reproducibility
+set.seed(7304) # generated at random.org
+
+# Divide into "estimation" (will be used for all parts of estimation) and test sets
+# "Estimation set" is not official terminology, but I needed something to call this...
+train_val_inds <- caret::createDataPartition(
+  y = cars$MPG, # response variable as a vector
+  p = 0.8 # approximate proportion of data used for training and validation
+)
+# any observations not listed below will be part of the test set.
+train_val_inds
+
+cars_train_val <- cars %>% slice(train_val_inds[[1]])
+cars_test <- cars %>% slice(-train_val_inds[[1]])
+
+# Generate partition of the "estimation" set into 5 folds
+# the result is a list of length 5 with indices of obsevations to include in each fold.
+num_crossval_folds <- 5
+crossval_fold_inds <- caret::createFolds(
+  y = cars_train_val$MPG, # response variable as a vector
+  k = num_crossval_folds # number of folds for cross-validation
+)
+```
+
+\newpage
+
+#### Step 2: Get performance for each validation fold, using the other folds put together as a training set.
+
+```{r}
+train_val_mse <- expand.grid(
+  poly_degree = seq_len(7),
+  val_fold_num = seq_len(num_crossval_folds),
+  train_mse = NA,
+  val_mse = NA
+)
+
+for(poly_degree in seq_len(7)) {
+  for(val_fold_num in seq_len(num_crossval_folds)) {
+    # When I'm ready to save results, where should they go?
+    results_index <- which(
+      train_val_mse$poly_degree == poly_degree &
+      train_val_mse$val_fold_num == val_fold_num
+    )
+    
+    # Assemble training and validation sets as specified by the fold number we're looking at.
+    cars_train <- cars_train_val %>% slice(-crossval_fold_inds[[val_fold_num]])
+    cars_val <- cars_train_val %>% slice(crossval_fold_inds[[val_fold_num]])
+    
+    # Fit to training data
+    fit <- lm(MPG ~ poly(Weight, poly_degree), data = cars_train) # note fit to train data!
+
+    # Get training and validation set MSE
+    train_resids <- cars_train$MPG - predict(fit) # by default, predictions are for training set
+    train_val_mse$train_mse[results_index] <- mean(train_resids^2)
+    
+    val_resids <- cars_val$MPG - predict(fit, cars_val) # here, get predictiosn for validation set
+    train_val_mse$val_mse[results_index] <- mean(val_resids^2)
+  }
+}
+head(train_val_mse)
+```
+
+```{r}
+summarized_crossval_mse_results <- train_val_mse %>%
+  group_by(poly_degree) %>%
+  summarize(
+    crossval_mse = mean(val_mse)
+  )
+summarized_crossval_mse_results
+```
+
+These results suggest that polynomials of degree 2 and 4, as well as possibly 1 and 3, have similar performance.
+
+#### Step 3: Find test set performance for chosen model(s)
+
+```{r}
+fit <- lm(MPG ~ poly(Weight, 2), data = cars_train_val) # note fit to combined train_val data!
+test_resids <- cars_test$MPG - predict(fit, newdata = cars_test) # based on predictions for test set
+mean(test_resids^2)
+
+fit <- lm(MPG ~ poly(Weight, 4), data = cars_train_val) # note fit to combined train_val data!
+test_resids <- cars_test$MPG - predict(fit, newdata = cars_test) # based on predictions for test set
+mean(test_resids^2)
+
+```
+
+\newpage
+
+## Cross-Validation Gives More Consistent Estimates of Test Set Performance than Just Validation.
+
+Code suppressed, but I did everything above 100 times for different randomly selected partitions of the data into training and validation sets.  In the following plot, each line shows results from either
+
+ * one split of the data into training and validation sets with an 80/20 split (for validation); or
+ * one split of the data into 5 cross-validation folds (for cross-validation)
+
+```{r, echo = FALSE, warning = FALSE, fig.height = 3}
+set.seed(1)
+
+num_reps <- 100
+
+num_crossval_folds <- 5
+
+crossval_mse <- expand.grid(
+  replication = seq_len(num_reps),
+  poly_degree = seq_len(7),
+  val_fold_num = seq_len(num_crossval_folds),
+  val_mse = NA
+)
+
+val_mse <- expand.grid(
+  replication = seq_len(num_reps),
+  poly_degree = seq_len(7),
+  val_mse = NA
+)
+
+for(replication_ind in seq_len(num_reps)) {
+  # Divide into "estimation" (will be used for all parts of estimation) and test sets
+  # "Estimation set" is not official terminology, but I needed something to call this...
+  train_val_inds <- list(seq_len(nrow(cars)))
+  # any observations not listed below will be part of the test set.
+  train_val_inds
+  
+  cars_train_val <- cars %>% slice(train_val_inds[[1]])
+  cars_test <- cars %>% slice(-train_val_inds[[1]])
+  
+  # Further divide the "estimation" set into a training part and a validation part.
+  train_inds <- caret::createDataPartition(
+    y = cars_train_val$MPG, # response variable as a vector -- note, splitting up cars_train_val
+    p = 0.8 # approximate proportion of estimation-phase data used for training
+  )
+  
+  cars_train <- cars_train_val %>% slice(train_inds[[1]])
+  cars_val <- cars_train_val %>% slice(-train_inds[[1]])
+  
+  # Generate partition of the "estimation" set into 10 folds
+  # the result is a list of length 10 with indices of obsevations to include in each fold.
+  crossval_fold_inds <- caret::createFolds(
+    y = cars_train_val$MPG, # response variable as a vector
+    k = num_crossval_folds # number of folds for cross-validation
+  )
+  
+  # Validation
+  for(poly_degree in seq_len(7)) {
+    results_index <- which(
+      val_mse$replication == replication_ind &
+      val_mse$poly_degree == poly_degree
+    )
+
+    fit <- lm(MPG ~ poly(Weight, poly_degree), data = cars_train) # note fit to train data!
+  
+    val_resids <- cars_val$MPG - predict(fit, cars_val) # here, get predictiosn for validation set
+    val_mse$val_mse[results_index] <- mean(val_resids^2)
+  }
+
+  # Cross-validation
+  for(poly_degree in seq_len(7)) {
+    for(val_fold_num in seq_len(num_crossval_folds)) {
+      # When I'm ready to save results, where should they go?
+      results_index <- which(
+        crossval_mse$replication == replication_ind &
+        crossval_mse$poly_degree == poly_degree &
+        crossval_mse$val_fold_num == val_fold_num
+      )
+      
+      # Assemble training and validation sets as specified by the fold number we're looking at.
+      cars_train <- cars_train_val %>% slice(-crossval_fold_inds[[val_fold_num]])
+      cars_val <- cars_train_val %>% slice(crossval_fold_inds[[val_fold_num]])
+      
+      # Fit to training data
+      fit <- lm(MPG ~ poly(Weight, poly_degree), data = cars_train) # note fit to train data!
+  
+      # Get validation set MSE
+      val_resids <- cars_val$MPG - predict(fit, cars_val) # here, get predictiosn for validation set
+      crossval_mse$val_mse[results_index] <- mean(val_resids^2)
+    }
+  }
+}
+
+```
+
+```{r, echo = FALSE, fig.height = 3}
+# Make a plot of the results!
+mse_results <- bind_rows(
+  crossval_mse %>%
+    group_by(replication, poly_degree) %>%
+    summarize(val_mse = mean(val_mse)) %>%
+    mutate(method = "Cross Validation"),
+  val_mse %>%
+    mutate(method = "Validation"),
+) %>%
+  mutate(
+    group = paste(replication, method, sep = "_")
+  )
+
+ggplot(data = mse_results, mapping = aes(x = poly_degree, y = val_mse, group = group, color = method)) +
+  geom_line() +
+  geom_point()# +
+#  facet_wrap( ~ type) +
+#  ggtitle("Same vertical axis scale both facets")
+```
+
+Here is the variance of MSE scores resulting from different train/validation splits, by polynomial degree and method.
+
+```{r, echo = FALSE, fig.height = 3}
+mse_results %>% group_by(method, poly_degree) %>%
+  summarize(
+    mse_variance = round(var(val_mse), 2)
+  ) %>%
+  spread(method, mse_variance) %>%
+  as.data.frame()
+```
+
+## How many Cross-Validation folds to use?
+
+Common choices:
+
+ * $k = 5$
+ * $k = 10$
+ * $k = n$ (also known as leave-one-out cross-validation)
+ 
+Consider:
+
+* Cross-validation is a procedure for estimating test-set error rate
+* Large $k$ means our training sets are more similar in size to our full data set
+* Large $k$ can be very computationally expensive.
+* An intermediate value like $k = 10$ usually works well enough.  $k=10$ is probably the most common choice.

@@ -1,0 +1,573 @@
+---
+title: "Expected Test Set MSE, Bias/Variance Trade-Off"
+author: "Evan L. Ray"
+date: "September 23, 2019"
+output:
+  ioslides_presentation:
+    smaller: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
+library(dplyr)
+library(ggplot2)
+library(grid)
+library(purrr)
+library(gridExtra)
+```
+
+<style> 
+  slides > slide > hgroup + article { 
+    margin-top: 10px; 
+  } 
+</style>
+
+## Running Example Set Up
+
+Consider a polynomial regression problem where the data are generated from
+
+$$
+y_i = 0.001 + 0.005 x_i -0.005 x_i^2 + 0.0002 x_i^3 + \varepsilon_i \\ \varepsilon_i \sim \text{Normal}(0, 0.4^2)
+$$
+
+```{r, echo = FALSE, fig.height=4}
+set.seed(12345)
+beta_0 <- 1/1000
+beta_1 <- 5/1000
+beta_2 <- -5/1000
+beta_3 <- 0.2/1000
+sigma <- 4 * 100/1000
+f_true <- function(x) {
+  beta_0 + beta_1 * x + beta_2 * x^2 + beta_3 * x^3
+}
+x <- seq(from = -10, to = 30, length = 25)
+y <- f_true(x) + rnorm(length(x), sd=sigma)
+
+x_test <- 20
+y_test <- f_true(x_test) + rnorm(length(x_test), sd=sigma)
+
+functions_toplot <- data.frame(
+  x = seq(from = -10, to = 30, length = 101)
+) %>%
+  mutate(
+    f_val = f_true(x),
+    func = "True f(x)"
+  )
+
+ggplot() +
+  geom_point(
+    data = data.frame(
+      x = c(x),
+      y = c(y),
+      group = c(rep("Train",length(x)))),
+    mapping = aes(x = x, y = y, fill = group, shape = group),
+    size = 2,
+    color = "white") +
+  geom_line(data = functions_toplot, mapping = aes(x = x, y = f_val, color = func)) +
+  scale_shape_manual("Points", breaks = c("Train"), values = c(22)) +
+  scale_fill_manual("Points", breaks = c("Train"), values = c("cornflowerblue")) +
+  scale_color_manual("Functions", breaks = c("True f(x)"), values = c("black")) +
+  theme_bw()
+```
+
+
+
+## Polynomial Fits of Degree 1, 3, and 15
+
+```{r, echo = FALSE, fig.height=4}
+set.seed(12345)
+y <- f_true(x) + rnorm(length(x), sd=sigma)
+y_test <- f_true(x_test) + rnorm(length(x_test), sd=sigma)
+
+set.seed(12345)
+
+beta_0 <- 1/1000
+beta_1 <- 5/1000
+beta_2 <- -5/1000
+beta_3 <- 0.2/1000
+sigma <- 4 * 100/1000
+
+f_true <- function(x) {
+  beta_0 + beta_1 * x + beta_2 * x^2 + beta_3 * x^3
+}
+
+x <- seq(from = -10, to = 30, length = 25)
+x_test <- 20
+x_pred <- sort(c(x_test, seq(from = -10, to = 30, length = 101)))
+
+get_stuff_to_plot <- function(i) {
+  y <- f_true(x) + rnorm(length(x), sd=sigma)
+  y_test <- f_true(x_test) + rnorm(length(x_test), sd=sigma)
+
+  functions_toplot <- data.frame(
+    x = x_pred
+  ) %>%
+    mutate(
+      f_val = f_true(x),
+      func = "True f(x)"
+    )
+
+  mfit1 <- lm(y ~ x)
+  f_fitted1 <- function(x) {
+    predict(mfit1, newdata = data.frame(x = x))
+  }
+  
+  mfit3 <- lm(y ~ poly(x, 3))
+  f_fitted3 <- function(x) {
+    predict(mfit3, newdata = data.frame(x = x))
+  }
+  
+  mfit20 <- lm(y ~ poly(x, 15))
+  f_fitted20 <- function(x) {
+    predict(mfit20, newdata = data.frame(x = x))
+  }
+  
+  functions_toplot <-
+    rbind(
+      functions_toplot,
+      functions_toplot %>%
+        mutate(
+          f_val = f_fitted20(x),
+          func = "Degree 15 Fits"
+        ),
+      functions_toplot %>%
+        mutate(
+          f_val = f_fitted3(x),
+          func = "Degree 3 Fits"
+        ),
+      functions_toplot %>%
+        mutate(
+          f_val = f_fitted1(x),
+          func = "Degree 1 Fits"
+        )
+    ) %>%
+    mutate(
+      sample_num = i
+    )
+  
+  return(functions_toplot)
+}
+
+fs_toplot<- purrr::map_dfr(1, get_stuff_to_plot)
+
+
+ggplot() +
+  geom_point(
+    data = data.frame(
+      x = c(x),
+      y = c(y),
+      group = c(rep("Train",length(x)))),
+    mapping = aes(x = x, y = y, fill = group, shape = group),
+    size = 2,
+    color = "white") +
+  geom_line(data = fs_toplot %>% filter(func != "True f(x)") %>% mutate(func = factor(as.character(func), levels = paste0("Degree ", c(1, 3, 15), " Fits"))),
+    mapping = aes(x = x, y = f_val, group = paste0(func, sample_num), color=func))+#,
+#    color = "cornflowerblue") +
+  geom_line(data = fs_toplot %>% filter(func == "True f(x)") %>% select(x, f_val),
+    mapping = aes(x = x, y = f_val)) +
+#  stat_function(fun = f_true, color = "black") +
+  scale_shape_manual("Points", breaks = c("Train", "Test"), values = c(21,22)) +
+  scale_fill_manual("Points", breaks = c("Train", "Test"), values = c("black")) +
+#  scale_color_viridis_d("Functions", begin = 0.2, end = 0.8, option = "A") +
+  scale_color_manual("Functions", values = c("cornflowerblue", "purple", "red")) +
+  theme_bw()# +
+#  facet_wrap(~ func, ncol = 3)
+```
+
+
+
+## Polynomial Fits of Degree 1, 3, and 15
+
+Here are fits to a second randomly generated training set.
+
+```{r, echo = FALSE, fig.height=4}
+set.seed(12345)
+y <- f_true(x) + rnorm(length(x), sd=sigma)
+y_test <- f_true(x_test) + rnorm(length(x_test), sd=sigma)
+y <- f_true(x) + rnorm(length(x), sd=sigma)
+y_test <- f_true(x_test) + rnorm(length(x_test), sd=sigma)
+
+set.seed(12345)
+
+beta_0 <- 1/1000
+beta_1 <- 5/1000
+beta_2 <- -5/1000
+beta_3 <- 0.2/1000
+sigma <- 4 * 100/1000
+
+f_true <- function(x) {
+  beta_0 + beta_1 * x + beta_2 * x^2 + beta_3 * x^3
+}
+
+x <- seq(from = -10, to = 30, length = 25)
+x_test <- 20
+x_pred <- sort(c(x_test, seq(from = -10, to = 30, length = 101)))
+
+get_stuff_to_plot <- function(i) {
+  y <- f_true(x) + rnorm(length(x), sd=sigma)
+  y_test <- f_true(x_test) + rnorm(length(x_test), sd=sigma)
+
+  functions_toplot <- data.frame(
+    x = x_pred
+  ) %>%
+    mutate(
+      f_val = f_true(x),
+      func = "True f(x)"
+    )
+
+  mfit1 <- lm(y ~ x)
+  f_fitted1 <- function(x) {
+    predict(mfit1, newdata = data.frame(x = x))
+  }
+  
+  mfit3 <- lm(y ~ poly(x, 3))
+  f_fitted3 <- function(x) {
+    predict(mfit3, newdata = data.frame(x = x))
+  }
+  
+  mfit20 <- lm(y ~ poly(x, 15))
+  f_fitted20 <- function(x) {
+    predict(mfit20, newdata = data.frame(x = x))
+  }
+  
+  functions_toplot <-
+    rbind(
+      functions_toplot,
+      functions_toplot %>%
+        mutate(
+          f_val = f_fitted20(x),
+          func = "Degree 15 Fits"
+        ),
+      functions_toplot %>%
+        mutate(
+          f_val = f_fitted3(x),
+          func = "Degree 3 Fits"
+        ),
+      functions_toplot %>%
+        mutate(
+          f_val = f_fitted1(x),
+          func = "Degree 1 Fits"
+        )
+    ) %>%
+    mutate(
+      sample_num = i
+    )
+  
+  return(functions_toplot)
+}
+
+fs_toplot<- purrr::map_dfr(1:2, get_stuff_to_plot) %>%
+  filter(
+    sample_num == 2
+  )
+
+
+ggplot() +
+  geom_point(
+    data = data.frame(
+      x = c(x),
+      y = c(y),
+      group = c(rep("Train",length(x)))),
+    mapping = aes(x = x, y = y, fill = group, shape = group),
+    size = 2,
+    color = "white") +
+  geom_line(data = fs_toplot %>% filter(func != "True f(x)") %>% mutate(func = factor(as.character(func), levels = paste0("Degree ", c(1, 3, 15), " Fits"))),
+    mapping = aes(x = x, y = f_val, group = paste0(func, sample_num), color=func))+#,
+#    color = "cornflowerblue") +
+  geom_line(data = fs_toplot %>% filter(func == "True f(x)") %>% select(x, f_val),
+    mapping = aes(x = x, y = f_val)) +
+#  stat_function(fun = f_true, color = "black") +
+  scale_shape_manual("Points", breaks = c("Train", "Test"), values = c(21,22)) +
+  scale_fill_manual("Points", breaks = c("Train", "Test"), values = c("black")) +
+#  scale_color_viridis_d("Functions", begin = 0.2, end = 0.8, option = "A") +
+  scale_color_manual("Functions", values = c("cornflowerblue", "purple", "red")) +
+  theme_bw()# +
+#  facet_wrap(~ func, ncol = 3)
+```
+
+
+
+## Polynomial Fits of Degree 1, 3, and 15
+
+Here's what fits look like across 100 randomly generated training samples.
+
+```{r, echo = FALSE, fig.height=3}
+beta_0 <- 1/1000
+beta_1 <- 5/1000
+beta_2 <- -5/1000
+beta_3 <- 0.2/1000
+sigma <- 4 * 100/1000
+
+f_true <- function(x) {
+  beta_0 + beta_1 * x + beta_2 * x^2 + beta_3 * x^3
+}
+
+x <- seq(from = -10, to = 30, length = 25)
+x_test <- 20
+x_pred <- sort(c(x_test, seq(from = -10, to = 30, length = 101)))
+
+get_stuff_to_plot <- function(i) {
+  y <- f_true(x) + rnorm(length(x), sd=sigma)
+  y_test <- f_true(x_test) + rnorm(length(x_test), sd=sigma)
+
+  functions_toplot <- data.frame(
+    x = x_pred
+  ) %>%
+    mutate(
+      f_val = f_true(x),
+      func = "True f(x)"
+    )
+
+  mfit1 <- lm(y ~ x)
+  f_fitted1 <- function(x) {
+    predict(mfit1, newdata = data.frame(x = x))
+  }
+  
+  mfit3 <- lm(y ~ poly(x, 3))
+  f_fitted3 <- function(x) {
+    predict(mfit3, newdata = data.frame(x = x))
+  }
+  
+  mfit20 <- lm(y ~ poly(x, 15))
+  f_fitted20 <- function(x) {
+    predict(mfit20, newdata = data.frame(x = x))
+  }
+  
+  functions_toplot <-
+    rbind(
+      functions_toplot,
+      functions_toplot %>%
+        mutate(
+          f_val = f_fitted20(x),
+          func = "Degree 15 Fits"
+        ),
+      functions_toplot %>%
+        mutate(
+          f_val = f_fitted3(x),
+          func = "Degree 3 Fits"
+        ),
+      functions_toplot %>%
+        mutate(
+          f_val = f_fitted1(x),
+          func = "Degree 1 Fits"
+        )
+    ) %>%
+    mutate(
+      sample_num = i
+    )
+  
+  return(functions_toplot)
+}
+
+fs_toplot<- purrr::map_dfr(1:100, get_stuff_to_plot)
+
+
+ggplot() +
+  geom_line(data = fs_toplot %>% filter(func != "True f(x)") %>% mutate(func = factor(as.character(func), levels = paste0("Degree ", c(1, 3, 15), " Fits"))),
+    mapping = aes(x = x, y = f_val, color = func, group = paste0(func, sample_num))) +
+  geom_line(data = fs_toplot %>% filter(func == "True f(x)") %>% select(x, f_val),
+    mapping = aes(x = x, y = f_val)) +
+#  stat_function(fun = f_true, color = "black") +
+  scale_shape_manual("Points", breaks = c("Train", "Test"), values = c(21,22)) +
+  scale_fill_manual("Points", breaks = c("Train", "Test"), values = c("orange", "cornflowerblue")) +
+#  scale_color_viridis_d("Functions", end = 0.8, option = "C") +
+#  scale_color_manual("Functions") +#, breaks = c("Fitted f(x)", "True f(x)"), values = c("cornflowerblue", "black")) +
+  scale_color_manual("Functions", values = c("cornflowerblue", "purple", "red")) +
+  theme_bw() +
+  facet_wrap(~ func, ncol = 3)
+```
+
+ * **Bias:** Average (across training sets) value of prediction minus true function value
+     * For many values of $x$, Degree 1 fit is biased
+     * Degree 3 and 15 fits are unbiased
+ * **Variance:** Variability of predicted values across training sets
+     * Degree 15 fit has high variance
+     * Degree 1 and 3 fits have lower variance
+
+## Performance at a test point
+
+We focus on measuring performance of our models at a particular input value, say $x_0 = 20$.
+
+```{r, echo = FALSE, fig.height=3}
+set.seed(12345)
+beta_0 <- 1/1000
+beta_1 <- 5/1000
+beta_2 <- -5/1000
+beta_3 <- 0.2/1000
+sigma <- 4 * 100/1000
+f_true <- function(x) {
+  beta_0 + beta_1 * x + beta_2 * x^2 + beta_3 * x^3
+}
+x <- seq(from = -10, to = 30, length = 25)
+y <- f_true(x) + rnorm(length(x), sd=sigma)
+
+x_test <- 20
+y_test <- f_true(x_test) + rnorm(length(x_test), sd=sigma)
+
+functions_toplot <- data.frame(
+  x = seq(from = -10, to = 30, length = 101)
+) %>%
+  mutate(
+    f_val = f_true(x),
+    func = "True f(x)"
+  )
+
+ggplot() +
+  geom_point(
+    data = data.frame(
+      x = c(x, x_test),
+      y = c(y, y_test),
+      group = c(rep("Train",length(x)), "Test")),
+    mapping = aes(x = x, y = y, fill = group, shape = group),
+    size = 2,
+    color = "white") +
+  geom_line(data = functions_toplot, mapping = aes(x = x, y = f_val, color = func)) +
+#  stat_function(fun = f_true, color = "black") +
+  scale_shape_manual("Points", breaks = c("Train", "Test"), values = c(21,22)) +
+  scale_fill_manual("Points", breaks = c("Train", "Test"), values = c("orange", "cornflowerblue")) +
+  scale_color_manual("Functions", breaks = c("True f(x)"), values = c("black")) +
+  theme_bw()
+```
+
+## Performance for Degree 1
+
+```{r, echo = FALSE, fig.height=2.5}
+set.seed(12345)
+beta_0 <- 1/1000
+beta_1 <- 5/1000
+beta_2 <- -5/1000
+beta_3 <- 0.2/1000
+sigma <- 4 * 100/1000
+f_true <- function(x) {
+  beta_0 + beta_1 * x + beta_2 * x^2 + beta_3 * x^3
+}
+x <- seq(from = -10, to = 30, length = 25)
+
+
+y <- f_true(x) + rnorm(length(x), sd=sigma)
+
+x_test <- 20
+y_test <- f_true(x_test) + rnorm(length(x_test), sd=sigma)
+
+functions_toplot <- data.frame(
+  x = seq(from = -10, to = 30, length = 101)
+) %>%
+  mutate(
+    f_val = f_true(x),
+    func = "True f(x)"
+  )
+
+mfit <- lm(y ~ x)
+f_fitted <- function(x) {
+  predict(mfit, newdata = data.frame(x = x))
+}
+
+functions_toplot <-
+  rbind(
+    functions_toplot,
+    functions_toplot %>%
+      mutate(
+        f_val = f_fitted(x),
+        func = "Fitted f(x)"
+      )
+  )
+
+
+ggplot() +
+  geom_point(
+    data = data.frame(
+      x = c(x, x_test),
+      y = c(y, y_test),
+      group = c(rep("Train",length(x)), "Test")),
+    mapping = aes(x = x, y = y, fill = group, shape = group),
+    size = 2,
+    color = "white") +
+  geom_line(data = functions_toplot, mapping = aes(x = x, y = f_val, color = func)) +
+#  stat_function(fun = f_true, color = "black") +
+  scale_shape_manual("Points", breaks = c("Train", "Test"), values = c(21,22)) +
+  scale_fill_manual("Points", breaks = c("Train", "Test"), values = c("orange", "cornflowerblue")) +
+  scale_color_manual("Functions", breaks = c("Fitted f(x)", "True f(x)"), values = c("cornflowerblue", "black")) +
+  theme_bw()
+```
+
+We record 3 things:
+
+1. Difference between test observation and fitted value: $y_0 - \hat{y}_0$
+    * Average of squared values across all train/test samples is **Expected test MSE**
+2. Difference between fitted value and true function value: $\hat{y}_0 - f(x_0)$
+    * Average across all train/test samples is the **Bias**
+    * Variance across all train/test samples is the **Variance**
+3. Difference between test observation and true function: $y_0 - f(x_0)$.
+    * Variance across all test samples is the **Model Error** (same as $Var(\varepsilon)$)
+
+
+
+## Performance on 10,000 samples
+
+```{r}
+get_nums <- function(i) {
+  y <- f_true(x) + rnorm(length(x), sd=sigma)
+  
+  x_test <- 20
+  y_test <- f_true(x_test) + rnorm(length(x_test), sd = sigma)
+  
+  mfit1 <- lm(y ~ x)
+  f_fitted1 <- function(x) {
+    predict(mfit1, newdata = data.frame(x = x))
+  }
+  y_0_minus_y_hat_0_1 <- (y_test - f_fitted1(x_test))
+  y_hat_0_minus_f_x_0_1 <- f_fitted1(x_test) - f_true(x_test)
+  y_0_minus_f_x_0_1 <- (y_test - f_true(x_test))
+
+  mfit3 <- lm(y ~ poly(x, 3))
+  f_fitted3 <- function(x) {
+    predict(mfit3, newdata = data.frame(x = x))
+  }
+  y_0_minus_y_hat_0_3 <- (y_test - f_fitted3(x_test))
+  y_hat_0_minus_f_x_0_3 <- f_fitted3(x_test) - f_true(x_test)
+  y_0_minus_f_x_0_3 <- (y_test - f_true(x_test))
+
+  mfit10 <- lm(y ~ poly(x, 15))
+  f_fitted10 <- function(x) {
+    predict(mfit10, newdata = data.frame(x = x))
+  }
+  y_0_minus_y_hat_0_10 <- (y_test - f_fitted10(x_test))
+  y_hat_0_minus_f_x_0_10 <- f_fitted10(x_test) - f_true(x_test)
+  y_0_minus_f_x_0_10 <- (y_test - f_true(x_test))
+  
+  return(
+    data.frame(
+      quantity = rep(c("y_0 - Fitted", "Fitted - f(x_0)", "Model Error"), times = 3),
+      value = c(y_0_minus_y_hat_0_1, y_hat_0_minus_f_x_0_1, y_0_minus_f_x_0_1, y_0_minus_y_hat_0_3, y_hat_0_minus_f_x_0_3, y_0_minus_f_x_0_3, y_0_minus_y_hat_0_10, y_hat_0_minus_f_x_0_10, y_0_minus_f_x_0_10),
+      degree = rep(c(1, 3, 15), each = 3)
+    )
+  )
+}
+
+res <- purrr::map_dfr(1:10000, get_nums)
+```
+
+```{r, fig.height = 4}
+ggplot(
+  data = res %>%
+    mutate(
+      quantity = factor(as.character(quantity), levels = c("y_0 - Fitted", "Fitted - f(x_0)", "Model Error"))
+    ),
+  mapping = aes(x = value)
+) +
+  geom_histogram(bins=20) +
+  facet_grid(degree ~ quantity)
+```
+
+```{r, echo = FALSE}
+res %>% group_by(degree) %>%
+  summarize(
+    Expected_test_MSE = mean(value[quantity == "y_0 - Fitted"]^2),
+    Bias = mean(value[quantity == "Fitted - f(x_0)"]),
+    Variance = var(value[quantity == "Fitted - f(x_0)"]),
+    Model_Error = var(value[quantity == "Model Error"]),
+    Bias2_Var_Model_Error = Bias^2 + Variance + Model_Error
+  )
+```
+
+

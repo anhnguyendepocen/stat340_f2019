@@ -137,7 +137,12 @@ make_week_box("week3", TRUE, "Week 3: Sep 16 -- Sep 20", "
 make_week_box("week4", TRUE, "Week 4: Sep 23 -- Sep 27", "
 #### Mon, Sep 23
  * **In class**, we will work on:
+    * Expected test set MSE and the Bias/Variance trade-off.
+        * Slides: [pdf](materials/20190923_mse_bias_var/Bias_Variance_Trade_Off.pdf)
+        * Source for Slides: [Rmd](materials/20190923_mse_bias_var/20190923_slides_mse_bias_var.Rmd)
  * **After class**, please:
+    * Finish Lab 2
+    * Study for quiz on Wed
 
 
 #### Wed, Sep 25

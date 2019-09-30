@@ -106,7 +106,7 @@ make_week_box("week2", FALSE, "Week 2: Sep 09 -- Sep 13", "
 ```
 
 ```{r, echo = FALSE, results='asis'}
-make_week_box("week3", TRUE, "Week 3: Sep 16 -- Sep 20", "
+make_week_box("week3", FALSE, "Week 3: Sep 16 -- Sep 20", "
 #### Mon, Sep 16
  * **In class**, we will work on:
     * Train/test splits:
@@ -127,7 +127,7 @@ make_week_box("week3", TRUE, "Week 3: Sep 16 -- Sep 20", "
 
 #### Fri, Sep 20
  * **In class**, we will work on:
-    * The Bias-Variance trade-off?
+    * Pairs Plots: [pdf](materials/20190920_paris_plots/20190920_Pairs_Plots.pdf)
     * Work on labs
  * **After class**, please:
 ")
@@ -147,11 +147,15 @@ make_week_box("week4", TRUE, "Week 4: Sep 23 -- Sep 27", "
 
 #### Wed, Sep 25
  * **In class**, we will work on:
+    * Quiz
+    * Review Lab 2.  My answers are posted at https://github.com/mhc-stat340-f2019-sec01/Lab02
+    * QQ Plots: [pdf](materials/20190925_transformations/20180917_QQ.pdf)
  * **After class**, please:
 
 
 #### Fri, Sep 27
  * **In class**, we will work on:
+    * Transformations: [pdf](materials/20190925_transformations/20180917_Transformations.pdf)
  * **After class**, please:
 ")
 ```

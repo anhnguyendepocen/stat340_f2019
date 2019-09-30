@@ -1,0 +1,49 @@
+---
+title: "Pairs Plots"
+date: "September 20, 2019"
+output: pdf_document
+classoption: landscape
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width = 120)
+```
+
+One of my favorite data sets contains a bunch of information about movies, including how the movie scores on the Bechdel test.  A movie passes the Bechdel test if it satisfies 3 rules:  1. it has at least two women;  2. the women talk to each other; and 3. they talk to each other about something or someone other than a man.
+
+Next week, we will build some models for a movie's international gross earnings in inflation-adjusted 2013 dollars (`intgross_2013`) based on the following 5 explanatory variables:
+
+ 1. `budget_2013`
+ 2. `run_time_min`
+ 3. `imdb_rating`
+ 4. `mpaa_rating`
+ 5. `bechdel_test_binary`
+
+```{r, warning=FALSE, message=FALSE, echo = FALSE}
+library(readr)
+library(dplyr)
+
+movies <- read_csv("http://www.evanlray.com/data/bechdel/bechdel.csv") %>%
+  filter(mpaa_rating %in% c("G", "PG", "PG-13", "R")) %>%
+  mutate(
+    bechdel_test = factor(bechdel_test, levels = c("nowomen", "notalk", "men", "dubious", "ok"), ordered = TRUE),
+    bechdel_test_binary = factor(bechdel_test_binary, levels = c("FAIL", "PASS"), ordered = TRUE),
+    mpaa_rating = factor(mpaa_rating, levels = c("G", "PG", "PG-13", "R"), ordered = TRUE)
+  )
+```
+
+```{r}
+head(movies)
+```
+
+The first thing to do is always to make some plots.  When we're thinking about multiple regression type problems with a reasonably small number of variables, the go-to plot is a pairs plot.
+
+```{r, warning=FALSE, message=FALSE, fig.height=7, fig.width=9}
+library(ggplot2) # general plotting functionality
+library(GGally) # includes the ggpairs function, pairs plots via ggplot2
+
+# I find it helpful to put the response variable last in this list, and to put quantitative variables next to each other.
+vars_to_use <- c("mpaa_rating", "bechdel_test_binary", "budget_2013", "run_time_min", "imdb_rating", "intgross_2013")
+ggpairs(movies %>% select(vars_to_use))
+```

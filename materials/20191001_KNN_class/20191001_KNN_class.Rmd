@@ -1,0 +1,377 @@
+---
+title: "KNN Classification"
+output:
+  pdf_document:
+    keep_tex: true
+geometry: margin=1.5cm
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+```{r, warning=FALSE, message=FALSE, echo = FALSE}
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+library(caret)
+```
+
+```{r, echo = FALSE}
+nes96 <- faraway::nes96 %>%
+  mutate(
+    party = ifelse(
+      PID %in% c("strRep", "weakRep", "indRep"), "Rep",
+      ifelse(
+        PID %in% c("strDem", "weakDem", "indDem"), "Dem",
+        "Ind"
+      )
+    )
+  )
+```
+
+## Classification
+
+Our response variable is a category for each observation, not a number.
+
+## Example: can we predict party affiliation as a function of age?
+
+We have data including the following variables for each of 944 participants in the 1996 American National Election Study:
+
+ * party affiliation ("Dem", "Ind", or "Rep").  This is our response variable, $y_i$
+ * age (range 19 to 91).  This is our explanatory variable or feature, $x_i$
+
+```{r}
+nes96 %>%
+  select(age, party) %>%
+  head()
+
+nrow(nes96)
+```
+
+Here are the counts of how many participants are in each party:
+
+```{r}
+nes96 %>%
+  count(party)
+```
+
+#### Train/test split
+
+As with regression, we will evaluate model performance based on a test set.
+
+```{r}
+set.seed(88412)
+train_inds <- caret::createDataPartition(nes96$party, p = 0.8)
+train_nes96 <- nes96 %>% slice(train_inds[[1]])
+test_nes96 <- nes96 %>% slice(-train_inds[[1]])
+```
+
+\newpage
+
+#### Some plots
+
+A scatter plot isn't that useful:
+
+```{r, fig.height = 3.5}
+ggplot(data = train_nes96, mapping = aes(x = age, y = party)) +
+  geom_point()
+```
+
+We can jitter the points, but still not that helpful:
+
+```{r, fig.height = 3.5}
+ggplot(data = train_nes96, mapping = aes(x = age, y = party, color = party)) +
+  geom_point(position = position_jitter(height = 0.1)) +
+  scale_color_manual(values = c("orange", "cornflowerblue", "mediumblue"))
+```
+
+\newpage
+
+How about a histogram? `postion = "fill"` says that within each bin, we want the bars to add up to 100%.
+
+```{r, fig.height = 3.5}
+ggplot(data = train_nes96, mapping = aes(x = age, fill = party)) +
+  geom_histogram(position = "fill") +
+  scale_fill_manual(values = c("orange", "cornflowerblue", "mediumblue"))
+```
+
+All of these put our response on the vertical axis, which is the easiest way to think about the model.  We could also do something like a density plot of the explanatory variable colored by the response:
+
+```{r, fig.height = 3.5}
+ggplot(data = train_nes96, mapping = aes(x = age, color = party)) +
+  geom_density() +
+  scale_color_manual(values = c("orange", "cornflowerblue", "mediumblue"))
+```
+
+\newpage
+
+### R Code for K Nearest Neighbors for Classification
+
+```{r}
+# "train" the KNN model
+# this code is exactly the same as the code to do KNN regression!
+knn_fit <- train(
+  form = party ~ age,
+  data = train_nes96,
+  method = "knn",
+  preProcess = "scale",
+  trControl = trainControl(method = "none"),
+  tuneGrid = data.frame(k = 100)
+)
+
+# to get estimated class membership probabilities, specify type = "prob" in the predict function
+f_hats <- predict(knn_fit, newdata = test_nes96, type = "prob")
+head(f_hats)
+
+# to get the most likely class, leave out type or specify type = "raw" (the default)
+# if the estimated class probability is the same for two classes, ties are broken at random
+y_hats <- predict(knn_fit, newdata = test_nes96, type = "raw")
+head(y_hats)
+
+# classification error rate: what proportion of predicted parties are not equal to the observed party?
+mean(y_hats != test_nes96$party)
+
+# how does this compare to just predicting the most common class in the training set?
+train_nes96 %>% count(party)
+mean("Dem" != test_nes96$party)
+```
+
+Our model does slightly better than just guessing the most common party in the training set.
+
+\newpage
+
+Here's a way to plot class membership probabilities as functions of age.  It's admittedly a little awkward.
+
+```{r, fig.height = 3.5}
+predict_knn_probs <- function(x, party) {
+  f_hats <- predict(knn_fit, newdata = data.frame(age = x), type = "prob")
+  f_hats[[party]]
+}
+
+ggplot(data = nes96, mapping = aes(x = age)) +
+  stat_function(fun = predict_knn_probs,
+    args = list(party = "Dem"),
+    mapping = aes(color = "Dem")) +
+  stat_function(fun = predict_knn_probs,
+    args = list(party = "Ind"),
+    mapping = aes(color = "Ind")) +
+  stat_function(fun = predict_knn_probs,
+    args = list(party = "Rep"),
+    mapping = aes(color = "Rep")) +
+  scale_color_manual("Party", values = c("orange", "cornflowerblue", "mediumblue")) +
+  ylim(0, 1)
+```
+
+\newpage
+
+### Flexibility is determined by $k$
+
+Here are plots of the estimated class probability functions for several values of $k$ (code suppressed):
+
+```{r, echo = FALSE}
+# "train" the KNN model
+# this code is exactly the same as the code to do KNN regression!
+get_knn_plot <- function(k) {
+  knn_fit <- train(
+    form = party ~ age,
+    data = train_nes96,
+    method = "knn",
+    preProcess = "scale",
+    trControl = trainControl(method = "none"),
+    tuneGrid = data.frame(k = k)
+  )
+  
+  # to get estimated class membership probabilities, specify type = "prob" in the predict function
+  f_hats <- predict(knn_fit, newdata = test_nes96, type = "prob")
+  head(f_hats)
+  
+  # to get the most likely class, leave out type or specify type = "raw" (the default)
+  y_hats <- predict(knn_fit, newdata = test_nes96, type = "raw")
+  head(y_hats)
+  
+  # here's a way to plot class membership probabilities as functions of age.
+  # it's admittedly a little awkward.
+  predict_knn_probs <- function(x, party) {
+    f_hats <- predict(knn_fit, newdata = data.frame(age = x), type = "prob")
+    f_hats[[party]]
+  }
+  
+  return(
+    ggplot(data = nes96, mapping = aes(x = age)) +
+      stat_function(fun = predict_knn_probs,
+        args = list(party = "Dem"),
+        mapping = aes(color = "Dem")) +
+      stat_function(fun = predict_knn_probs,
+        args = list(party = "Ind"),
+        mapping = aes(color = "Ind")) +
+      stat_function(fun = predict_knn_probs,
+        args = list(party = "Rep"),
+        mapping = aes(color = "Rep")) +
+      scale_color_manual("Party", values = c("orange", "cornflowerblue", "mediumblue")) +
+      ylim(0, 1) +
+      ggtitle(paste0("k = ", k))
+  )
+}
+
+grid.arrange(
+  get_knn_plot(1),
+  get_knn_plot(5),
+  get_knn_plot(10),
+  get_knn_plot(50),
+  get_knn_plot(100),
+  get_knn_plot(250)
+)
+```
+
+### Decision Boundaries
+
+We won't explicitly calculate this for KNN, but it's nice to have in mind the concept of a *decision boundary*: the point at which the predicted value (class with highest estimated probability) changes.  I've indicated the decision boundaries on the plot below for $k = 250$:
+
+```{r, echo = FALSE, fig.height = 3}
+# "train" the KNN model
+# this code is exactly the same as the code to do KNN regression!
+knn_fit <- train(
+  form = party ~ age,
+  data = train_nes96,
+  method = "knn",
+  preProcess = "scale",
+  trControl = trainControl(method = "none"),
+  tuneGrid = data.frame(k = 250)
+)
+
+# to get estimated class membership probabilities, specify type = "prob" in the predict function
+f_hats <- predict(knn_fit, newdata = data.frame(age = seq(from = 19, to = 91, length = 1001)), type = "prob")
+
+# to get the most likely class, leave out type or specify type = "raw" (the default)
+y_hats <- predict(knn_fit, newdata = data.frame(age = seq(from = 19, to = 91, length = 1001)), type = "raw")
+
+# here's a way to plot class membership probabilities as functions of age.
+# it's admittedly a little awkward.
+predict_knn_probs <- function(x, party) {
+  f_hats <- predict(knn_fit, newdata = data.frame(age = x), type = "prob")
+  f_hats[[party]]
+}
+
+# change point indices
+changepoint_inds <- (rle(apply(f_hats, 1, which.max))$lengths) %>% cumsum()
+changepoint_inds <- changepoint_inds[seq_len(length(changepoint_inds) - 1)]
+
+ggplot(data = nes96, mapping = aes(x = age)) +
+  stat_function(fun = predict_knn_probs,
+    args = list(party = "Dem"),
+    mapping = aes(color = "Dem"),
+    n = 1001) +
+  stat_function(fun = predict_knn_probs,
+    args = list(party = "Ind"),
+    mapping = aes(color = "Ind"),
+    n = 1001) +
+  stat_function(fun = predict_knn_probs,
+    args = list(party = "Rep"),
+    mapping = aes(color = "Rep"),
+    n = 1001) +
+  geom_vline(xintercept = seq(from = 19, to = 91, length = 1001)[changepoint_inds]) +
+  scale_color_manual("Party", values = c("orange", "cornflowerblue", "mediumblue")) +
+  ylim(0, 1)
+```
+
+Note that there are generally fewer decision boundaries as $k$ increases.
+
+\newpage
+
+### KNN with 2 features
+
+Suppose we use two variables to predict party affiliation:
+
+ * `age` (range 19 to 91).  This is our first explanatory variable or feature, $x_{i1}$
+ * `popul` (range 0 to 7300)  population of respondent's location in 1000s of people.  This is our second feature, $x_{i2}$
+
+With 2 inputs, the estimated class probability functions would have to be visualized in 3 dimensions (age, popul, and estimated class probability).
+
+Instead, it's easier to display the decision boundaries in the two-dimensional feature space of values of (age, popul).
+
+The plots below show these for a range of values of $k$:
+
+```{r, echo = FALSE, fig.height = 8}
+get_knn_plot <- function(k) {
+  # "train" the KNN model
+  knn_fit <- train(
+    form = party ~ age + popul,
+    data = train_nes96,
+    method = "knn",
+    preProcess = "scale",
+    trControl = trainControl(method = "none"),
+    tuneGrid = data.frame(k = k)
+  )
+  
+  test_grid <- expand.grid(
+    age = seq(from = 19, to = 91, length = 201),
+    popul = seq(from = 19, to = 7300, length = 201)
+  )
+  # to get estimated class membership probabilities, specify type = "prob" in the predict function
+  f_hats <- predict(knn_fit, newdata = test_grid, type = "prob")
+
+  # to get the most likely class, leave out type or specify type = "raw" (the default)
+  y_hats <- predict(knn_fit, newdata = test_grid, type = "raw")
+
+  background_knn <- test_grid %>%
+    mutate(
+      est_party = y_hats
+    )
+  
+  p_k <- ggplot() +
+    geom_raster(data = background_knn,
+      mapping = aes(x = age, y = popul, fill = est_party), alpha = 0.2) +
+    geom_point(data = train_nes96, mapping = aes(x = age, y = popul, color = party)) +
+    scale_color_manual("party", values = c("orange", "cornflowerblue", "mediumblue")) +
+    scale_fill_manual(values = c("orange", "cornflowerblue", "mediumblue")) +
+    ggtitle(paste0("KNN, k = ", k))
+  
+  return(p_k)
+}
+
+plots_knn <- lapply(c(1, 5, 10, 50, 100, 250), get_knn_plot)
+
+grid.arrange(plots_knn[[1]], plots_knn[[2]], plots_knn[[3]], plots_knn[[4]], plots_knn[[5]], plots_knn[[6]], ncol = 2)
+```
+
+Here's how you could make one of these plots:
+
+```{r, fig.height = 2}
+# "train" the KNN model
+knn_fit <- train(
+  form = party ~ age + popul,
+  data = train_nes96,
+  method = "knn",
+  preProcess = "scale",
+  trControl = trainControl(method = "none"),
+  tuneGrid = data.frame(k = 5)
+)
+
+# a grid of values for age and popul at which to get the estimated class.
+# it's not a test data set in the sense that we don't have observations of party to go with these points,
+# but we will treat it as a "test set" in the sense that we will obtain predictions at these points
+test_grid <- expand.grid(
+  age = seq(from = 19, to = 91, length = 201),
+  popul = seq(from = 19, to = 7300, length = 201)
+)
+head(test_grid)
+
+# use predict to find the estimated most likely class at each point in our grid
+y_hats <- predict(knn_fit, newdata = test_grid, type = "raw")
+
+# add the estimated types into the test_grid data frame
+background_knn <- test_grid %>%
+  mutate(
+    est_party = y_hats
+  )
+
+# make the plot.  geom_raster does the shading in the background, alpha = 0.2 makes it transparent
+ggplot() +
+  geom_raster(data = background_knn,
+    mapping = aes(x = age, y = popul, fill = est_party), alpha = 0.2) +
+  geom_point(data = train_nes96, mapping = aes(x = age, y = popul, color = party)) +
+  scale_color_manual("party", values = c("orange", "cornflowerblue", "mediumblue")) +
+  scale_fill_manual(values = c("orange", "cornflowerblue", "mediumblue")) +
+  ggtitle("KNN, k = 5")
+```

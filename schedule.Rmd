@@ -164,16 +164,21 @@ make_week_box("week4", TRUE, "Week 4: Sep 23 -- Sep 27", "
 make_week_box("week5", TRUE, "Week 5: Sep 30 -- Oct 04", "
 #### Mon, Sep 30
  * **In class**, we will work on:
+    * KNN for Regression: [pdf](materials/20190930_KNN/20180920_KNN.pdf) [Rmd](materials/20190930_KNN/20180920_KNN.Rmd)
  * **After class**, please:
 
 
 #### Wed, Oct 02
  * **In class**, we will work on:
+    * Quiz
+    * Review Lab 3
+    * KNN for classification: [pdf](materials/20191001_KNN_class/20191001_KNN_class.pdf) [Rmd](materials/20191001_KNN_class/20191001_KNN_class.Rmd)
  * **After class**, please:
 
 
 #### Fri, Oct 04
  * **In class**, we will work on:
+    * Lab on KNN for classification, cross-validation for classification
  * **After class**, please:
 ")
 ```

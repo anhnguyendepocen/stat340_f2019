@@ -172,13 +172,16 @@ make_week_box("week5", TRUE, "Week 5: Sep 30 -- Oct 04", "
  * **In class**, we will work on:
     * Quiz
     * Review Lab 3.  My solutions are at https://github.com/mhc-stat340-f2019-sec01/Lab03-solutions
-    * KNN for classification: [pdf](materials/20191001_KNN_class/20191001_KNN_class.pdf) [Rmd](materials/20191001_KNN_class/20191001_KNN_class.Rmd)
+    * KNN for classification:
+        * Lecture Notes: [pdf](materials/20191001_KNN_class/lecture_notes.pdf)
+        * Handout: [pdf](materials/20191001_KNN_class/20191001_KNN_class.pdf) [Rmd](materials/20191001_KNN_class/20191001_KNN_class.Rmd)
  * **After class**, please:
 
 
 #### Fri, Oct 04
  * **In class**, we will work on:
-    * Lab on KNN for classification, cross-validation for classification
+    * Measuring error rates and cross-validation for classification (continuing lecture notes from last class)
+    * Start handout from last class
  * **After class**, please:
 ")
 ```
@@ -187,6 +190,8 @@ make_week_box("week5", TRUE, "Week 5: Sep 30 -- Oct 04", "
 make_week_box("week6", TRUE, "Week 6: Oct 07 -- Oct 11", "
 #### Mon, Oct 07
  * **In class**, we will work on:
+    * Finish handout posted Wed Oct 2
+    * Lab on KNN for classification
  * **After class**, please:
 
 

@@ -2,19 +2,22 @@
 title: "Homework"
 ---
 
-+------------------+--------------------------------------------------------------------------------------+-------------------+----------+-----------------------+
-| Assignment       | Description                                                                          | Due Date          | Value    | Solutions             |
-+==================+======================================================================================+===================+==========+=======================+
-|    0 (HW0)       | Optional Data Camp assignments.                                                      |    N/A            | 0        |  N/A                  |
-|                  |                                                                                      |                   |(optional)|                       |
-|                  | Register for our course on Data Camp at this link, and complete the assignment there:|                   |          |                       |
-|                  | https://www.datacamp.com/groups/shared_links/05f4cfe1a97b39e7a1ec3c1515946eb67771d605|                   |          |                       |
-|                  |                                                                                      |                   |          |                       |
-|                  | If you are already comfortable with R, you don't need to do this.                    |                   |          |                       |
-+------------------+--------------------------------------------------------------------------------------+-------------------+----------+-----------------------+
-|    1 (HW1)       | Prerequisites and day 1.  This is just to make sure you feel comfortable with the    | Sept. 13          | 1        | Posted later.         |
-|                  | foundations.  You should have received an invitation to a GitHub repository with the |                   |          |                       |
-|                  | assignment.  Let me know if not.                                                     |                   |          |                       |
-+------------------+--------------------------------------------------------------------------------------+-------------------+----------+-----------------------+
-|    2 (HW2)       | Linear Algebra view of linear regression models.                                     | Sept. 20          | 1        | Posted later.         |
-+------------------+--------------------------------------------------------------------------------------+-------------------+----------+-----------------------+
++------------------+--------------------------------------------------------------------------------------+-------------------+----------+---------------------------------------------------------------+
+| Assignment       | Description                                                                          | Due Date          | Value    | Solutions                                                     |
++==================+======================================================================================+===================+==========+===============================================================+
+|    0 (HW0)       | Optional Data Camp assignments.                                                      |    N/A            | 0        |  N/A                                                          |
+|                  |                                                                                      |                   |(optional)|                                                               |
+|                  | Register for our course on Data Camp at this link, and complete the assignment there:|                   |          |                                                               |
+|                  | https://www.datacamp.com/groups/shared_links/05f4cfe1a97b39e7a1ec3c1515946eb67771d605|                   |          |                                                               |
+|                  |                                                                                      |                   |          |                                                               |
+|                  | If you are already comfortable with R, you don't need to do this.                    |                   |          |                                                               |
++------------------+--------------------------------------------------------------------------------------+-------------------+----------+---------------------------------------------------------------+
+|    1 (HW1)       | Prerequisites and day 1.  This is just to make sure you feel comfortable with the    | Sept. 13          | 1        | https://github.com/mhc-stat340-f2019-sec01/HW1-solutions.git  |
+|                  | foundations.  You should have received an invitation to a GitHub repository with the |                   |          |                                                               |
+|                  | assignment.  Let me know if not.                                                     |                   |          |                                                               |
++------------------+--------------------------------------------------------------------------------------+-------------------+----------+---------------------------------------------------------------+
+|    2 (HW2)       | Linear Algebra view of linear regression models.                                     | Sept. 20          | 1        | https://github.com/mhc-stat340-f2019-sec01/HW2-solutions.git  |
++------------------+--------------------------------------------------------------------------------------+-------------------+----------+---------------------------------------------------------------+
+|    3 (HW3)       | Cross-validation, transformations, and issues with model specification and multiple  | Oct. 5            | 1        | Posted later.                                                 |
+|                  | comparisons.                                                                         |                   |          |                                                               |
++------------------+--------------------------------------------------------------------------------------+-------------------+----------+---------------------------------------------------------------+

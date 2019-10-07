@@ -18,6 +18,6 @@ title: "Homework"
 +------------------+--------------------------------------------------------------------------------------+-------------------+----------+---------------------------------------------------------------+
 |    2 (HW2)       | Linear Algebra view of linear regression models.                                     | Sept. 20          | 1        | https://github.com/mhc-stat340-f2019-sec01/HW2-solutions.git  |
 +------------------+--------------------------------------------------------------------------------------+-------------------+----------+---------------------------------------------------------------+
-|    3 (HW3)       | Cross-validation, transformations, and issues with model specification and multiple  | Oct. 5            | 1        | Posted later.                                                 |
+|    3 (HW3)       | Cross-validation, transformations, and issues with model specification and multiple  | Oct. 5            | 1        | https://github.com/mhc-stat340-f2019-sec01/HW3-solutions.git  |
 |                  | comparisons.                                                                         |                   |          |                                                               |
 +------------------+--------------------------------------------------------------------------------------+-------------------+----------+---------------------------------------------------------------+

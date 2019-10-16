@@ -7,6 +7,7 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
@@ -69,9 +70,7 @@ h6 {
 </style>
 
 
-</head>
 
-<body>
 
 <style type = "text/css">
 .main-container {
@@ -85,7 +84,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -190,8 +188,6 @@ $(document).ready(function () {
 });
 </script>
 
-<div class="container-fluid main-container">
-
 <!-- tabsets -->
 
 <style type="text/css">
@@ -248,20 +244,17 @@ $(document).ready(function () {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
 
 
 
@@ -327,22 +320,22 @@ $(document).ready(function () {
 <li>Overview of course (slides): <a href="materials/20190904_intro/20190904_slides_class_overview.pdf">pdf</a></li>
 <li>Warmup activity in groups: <a href="materials/20190904_intro/20190904_slr_warmup.pdf">pdf</a></li>
 <li>Brief reminder of commands for simple linear regression in R: <a href="materials/20190904_intro/20190904_SLR_summary.pdf">pdf</a></li>
-<li>Matrix notation for multiple regression (See Chapter 1 of ISLR and <a href="https://en.wikipedia.org/wiki/Linear_regression#Introduction" class="uri">https://en.wikipedia.org/wiki/Linear_regression#Introduction</a>)
+<li>Matrix notation for multiple regression (See Chapter 1 of ISLR and <a href="https://en.wikipedia.org/wiki/Linear_regression#Introduction">https://en.wikipedia.org/wiki/Linear_regression#Introduction</a>)
 <ul>
 <li>Lecture notes: <a href="materials/20190904_intro/20190904_lecture_notes.pdf">pdf</a></li>
 <li>R code example: <a href="materials/20190904_intro/20190904_beer_example.Rmd">Rmd</a></li>
 </ul></li>
 <li>Get set up with GitHub:
 <ul>
-<li>Video overview: <a href="https://www.youtube.com/watch?v=YxZ8J2rqhEM" class="uri">https://www.youtube.com/watch?v=YxZ8J2rqhEM</a></li>
+<li>Video overview: <a href="https://www.youtube.com/watch?v=YxZ8J2rqhEM">https://www.youtube.com/watch?v=YxZ8J2rqhEM</a></li>
 <li>pdf with detailed instructions: <a href="materials/20190904_intro/Stat340-github-setup.pdf">pdf</a></li>
-<li>On step 1, please enter your name and GitHub user name in this form: <a href="https://forms.gle/tmv25zoB4EPipa7f8" class="uri">https://forms.gle/tmv25zoB4EPipa7f8</a></li>
+<li>On step 1, please enter your name and GitHub user name in this form: <a href="https://forms.gle/tmv25zoB4EPipa7f8">https://forms.gle/tmv25zoB4EPipa7f8</a></li>
 </ul></li>
 </ul></li>
 <li><strong>After class</strong>, please:
 <ul>
 <li>Sign up for our class on Piazza: <a href="https://piazza.com/mtholyoke/fall2019/stat340" class="uri">https://piazza.com/mtholyoke/fall2019/stat340</a></li>
-<li>Fill out this poll about when my office hours should be held: <a href="http://whenisgood.net/8jeinxd" class="uri">http://whenisgood.net/8jeinxd</a></li>
+<li>Fill out this poll about when my office hours should be held: <a href="http://whenisgood.net/8jeinxd">http://whenisgood.net/8jeinxd</a></li>
 <li>Finish getting RStudio set up with GitHub if you didn’t get there in class - ask if you have any questions!</li>
 <li>Review the handout about simple linear regression</li>
 <li>Start reading Chapter 1, and Sections 2.1, 2.2.1, 2.2.2, 3.1, 3.2, and 3.3 of ISLR. This material should be mostly familiar, but we will discuss this material over the first two weeks or so of class.</li>
@@ -485,7 +478,7 @@ $(document).ready(function () {
 <a data-toggle="collapse" href="#week4" aria-expanded="true" aria-controls="collapseOne"> Week 4: Sep 23 – Sep 27</a>
 </h5>
 </div>
-<div id="week4" class="collapse in">
+<div id="week4" class="collapse">
 <div class="panel-body">
 <h4 id="mon-sep-23">Mon, Sep 23</h4>
 <ul>
@@ -530,7 +523,7 @@ $(document).ready(function () {
 <a data-toggle="collapse" href="#week5" aria-expanded="true" aria-controls="collapseOne"> Week 5: Sep 30 – Oct 04</a>
 </h5>
 </div>
-<div id="week5" class="collapse in">
+<div id="week5" class="collapse">
 <div class="panel-body">
 <h4 id="mon-sep-30">Mon, Sep 30</h4>
 <ul>
@@ -572,7 +565,7 @@ $(document).ready(function () {
 <a data-toggle="collapse" href="#week6" aria-expanded="true" aria-controls="collapseOne"> Week 6: Oct 07 – Oct 11</a>
 </h5>
 </div>
-<div id="week6" class="collapse in">
+<div id="week6" class="collapse">
 <div class="panel-body">
 <h4 id="mon-oct-07">Mon, Oct 07</h4>
 <ul>
@@ -585,12 +578,18 @@ $(document).ready(function () {
 </ul>
 <h4 id="wed-oct-09">Wed, Oct 09</h4>
 <ul>
-<li><strong>In class</strong>, we will work on:</li>
+<li><strong>In class</strong>, we will work on:
+<ul>
+<li>Midterm</li>
+</ul></li>
 <li><strong>After class</strong>, please:</li>
 </ul>
 <h4 id="fri-oct-11">Fri, Oct 11</h4>
 <ul>
-<li><strong>In class</strong>, we will work on:</li>
+<li><strong>In class</strong>, we will work on:
+<ul>
+<li>Answer to problem 2 (a) and (b) on HW</li>
+</ul></li>
 <li><strong>After class</strong>, please:</li>
 </ul>
 </div>
@@ -610,7 +609,10 @@ $(document).ready(function () {
 </ul>
 <h4 id="wed-oct-16">Wed, Oct 16</h4>
 <ul>
-<li><strong>In class</strong>, we will work on:</li>
+<li><strong>In class</strong>, we will work on:
+<ul>
+<li>Logistic Regression <a href="materials/20191016_logistic_reg/20191016_logistic_intro.pdf">pdf</a></li>
+</ul></li>
 <li><strong>After class</strong>, please:</li>
 </ul>
 <h4 id="fri-oct-18">Fri, Oct 18</h4>
@@ -855,6 +857,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

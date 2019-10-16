@@ -134,7 +134,7 @@ make_week_box("week3", FALSE, "Week 3: Sep 16 -- Sep 20", "
 ```
 
 ```{r, echo = FALSE, results='asis'}
-make_week_box("week4", TRUE, "Week 4: Sep 23 -- Sep 27", "
+make_week_box("week4", FALSE, "Week 4: Sep 23 -- Sep 27", "
 #### Mon, Sep 23
  * **In class**, we will work on:
     * Expected test set MSE and the Bias/Variance trade-off.
@@ -161,7 +161,7 @@ make_week_box("week4", TRUE, "Week 4: Sep 23 -- Sep 27", "
 ```
 
 ```{r, echo = FALSE, results='asis'}
-make_week_box("week5", TRUE, "Week 5: Sep 30 -- Oct 04", "
+make_week_box("week5", FALSE, "Week 5: Sep 30 -- Oct 04", "
 #### Mon, Sep 30
  * **In class**, we will work on:
     * KNN for Regression: [pdf](materials/20190930_KNN/20180920_KNN.pdf) [Rmd](materials/20190930_KNN/20180930_KNN.Rmd)
@@ -187,7 +187,7 @@ make_week_box("week5", TRUE, "Week 5: Sep 30 -- Oct 04", "
 ```
 
 ```{r, echo = FALSE, results='asis'}
-make_week_box("week6", TRUE, "Week 6: Oct 07 -- Oct 11", "
+make_week_box("week6", FALSE, "Week 6: Oct 07 -- Oct 11", "
 #### Mon, Oct 07
  * **In class**, we will work on:
     * Finish handout posted Wed Oct 2
@@ -197,11 +197,13 @@ make_week_box("week6", TRUE, "Week 6: Oct 07 -- Oct 11", "
 
 #### Wed, Oct 09
  * **In class**, we will work on:
+    * Midterm
  * **After class**, please:
 
 
 #### Fri, Oct 11
  * **In class**, we will work on:
+    * Answer to problem 2 (a) and (b) on HW
  * **After class**, please:
 ")
 ```
@@ -214,6 +216,7 @@ make_week_box("week7", TRUE, "Week 7: Oct 14 -- Oct 18", "
 
 #### Wed, Oct 16
  * **In class**, we will work on:
+    * Logistic Regression [pdf](materials/20191016_logistic_reg/20191016_logistic_intro.pdf)
  * **After class**, please:
 
 

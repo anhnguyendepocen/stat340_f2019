@@ -1,0 +1,164 @@
+---
+title: "Stat 340: Intro. to Classification and Logistic Regression"
+output: pdf_document
+---
+
+# Example: Crab species identification
+
+We will work with a data set about Leptograpsus crabs originally presented in
+
+Campbell, N.A. and Mahon, R.J. (1974) A multivariate study of variation in two species of rock crab of genus Leptograpsus. Australian Journal of Zoology 22, 417–425.
+
+They have also been discussed previously in
+
+Venables, W. N. and Ripley, B. D. (2002) Modern Applied Statistics with S. Fourth edition. Springer.
+
+There are two species of this crab; we will attempt to predict the species of a crab based on measurements of its physical dimensions.  The data we are working with contains 5 morphological measurements on 200 crabs, 100 each of two species of Leptograpsus crabs collected at Fremantle, W. Australia.
+
+The variables in this data set are as follows:
+
+ * `sp`: species - "B" or "O" for blue or orange.
+ * `sex`: the crab's sex
+ * `FL`: frontal lobe size (mm).
+ * `RW`: rear width (mm).
+ * `CL`: carapace length (mm).
+ * `CW`: carapace width (mm).
+ * `BD`: body depth (mm).
+
+```{r, echo = FALSE, message = FALSE, warning=FALSE}
+library(MASS)
+library(ggplot2)
+library(dplyr)
+library(caret)
+set.seed(478)
+crabs <- MASS::crabs[sample.int(nrow(crabs)), ]
+crabs <- crabs %>% dplyr::select(-index)
+```
+
+#### Binary encoding of response variable
+
+It is traditional in logistic regression to use an indicator variable for the response variable:
+
+\begin{align*}
+Y_i &= \begin{cases} 1 & \text{ if crab number $i$ is an orange crab} \\ 0 & \text{ otherwise (if a blue crab)} \end{cases}
+\end{align*}
+
+```{r}
+crabs <- crabs %>%
+  mutate(
+    sp_01 = ifelse(sp == "O", 1, 0)
+  )
+
+head(crabs)
+dim(crabs)
+```
+
+### Train/test split
+
+```{r}
+set.seed(64781) # seed generated at random.org
+
+train_inds <- caret::createDataPartition(crabs$sp, p = 0.75)
+
+train_crabs <- crabs %>% dplyr::slice(train_inds[[1]])
+test_crabs <- crabs %>% dplyr::slice(-train_inds[[1]])
+```
+
+### Plot of the data
+
+```{r}
+ggplot(data = train_crabs, mapping = aes(x = FL, y = sp_01)) +
+  geom_point()
+```
+
+### Train logistic regression model
+
+Note:
+
+ * Behind the scenes, `sp` is converted to 0/1 representation by the train function
+ * By default, assignment is in alphabetic order, so "B" goes to 0 and "O" goes to 1.
+
+```{r}
+logistic_fit <- train(
+  form = sp ~ FL,
+  data = train_crabs,
+  family = "binomial", # this is an argument to glm; response is 0 or 1, binomial
+  method = "glm", # method for fit; "generalized linear model"
+  trControl = trainControl(method = "none")
+)
+```
+
+### Print model summary (coefficient estimates and p-values for tests)
+
+```{r}
+summary(logistic_fit$finalModel)
+```
+
+### Plot estimated class probability function
+
+Note: code is essentially identical to what we used for KNN.
+
+```{r}
+predict_logistic_probs <- function(x, sp) {
+  f_hats <- predict(logistic_fit, newdata = data.frame(FL = x), type = "prob")
+  f_hats[[sp]]
+}
+
+ggplot(data = train_crabs, mapping = aes(x = FL, y = sp_01)) +
+  geom_point() +
+  stat_function(fun = predict_logistic_probs,
+    args = list(sp = "O")) +
+  ylim(0, 1)
+```
+
+Code suppressed, but here's a comparison to a KNN fit with K = 30 neighbors:
+
+```{r, echo = FALSE}
+knn_fit <- train(
+  form = sp ~ FL,
+  data = train_crabs,
+  method = "knn",
+  preProcess = "scale",
+  trControl = trainControl(method = "none"),
+  tuneGrid = data.frame(k = 30)
+)
+
+predict_knn <- function(x, sp) {
+  f_hats <- predict(knn_fit, newdata = data.frame(FL = x), type = "prob")
+  f_hats[[sp]]
+}
+
+ggplot(data = train_crabs, mapping = aes(x = FL, y = sp_01)) +
+  geom_point() +
+  stat_function(fun = predict_logistic_probs,
+    args = list(sp = "O")) +
+  stat_function(fun = predict_knn,
+    args = list(sp = "O"), color = "orange") +
+  ylim(0, 1)
+
+```
+
+### What's the estimated probability that a crab with a frontal lobe size of 20 mm is an orange crab?
+
+```{r}
+predict(logistic_fit, newdata = data.frame(FL = 20), type = "prob")
+```
+
+### What's our decision boundary?
+
+
+
+
+\vspace{3cm}
+
+### What's the interpretation of $\hat{\beta}_1$?
+
+\vspace{3cm}
+
+### Get test set predictions and error rate
+
+```{r}
+test_sp_hat <- predict(logistic_fit, newdata = test_crabs, type = "raw")
+test_sp_hat
+mean(test_crabs$sp != test_sp_hat)
+```

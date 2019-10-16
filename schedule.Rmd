@@ -216,12 +216,15 @@ make_week_box("week7", TRUE, "Week 7: Oct 14 -- Oct 18", "
 
 #### Wed, Oct 16
  * **In class**, we will work on:
-    * Logistic Regression [pdf](materials/20191016_logistic_reg/20191016_logistic_intro.pdf)
+    * Logistic Regression
+        * Lecture notes: [pdf](materials/20191016_logistic_reg/lecture_notes.pdf)
+        * Handout: [pdf](materials/20191016_logistic_reg/20191016_logistic_intro.pdf)
  * **After class**, please:
 
 
 #### Fri, Oct 18
  * **In class**, we will work on:
+    * Logistic Regression with multiple explanatory variables
  * **After class**, please:
 ")
 ```

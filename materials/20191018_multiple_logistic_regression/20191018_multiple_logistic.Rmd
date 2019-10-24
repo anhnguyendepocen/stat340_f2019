@@ -1,0 +1,327 @@
+---
+title: "Multiple Logistic Regression"
+output: pdf_document
+---
+
+## Logistic Regression with Multiple Explanatory Variables
+
+We will now extend logistic regression to allow for $p$ explanatory variables which may be either quantitative or categorical.
+
+\begin{align*}
+P(Y_i = 1 | X_{i1}, \ldots, X_{ip}) = p(X_{i1}, \ldots, X_{ip}) &= \frac{e^{\beta_0 + \beta_1 X_{i1} + \cdots + \beta_p X_{ip}}}{1 + e^{\beta_0 + \beta_1 X_{i1} + \cdots + \beta_p X_{ip}}}
+\end{align*}
+
+Illustration with $p = 2$ explanatory variables:
+
+```{r, echo = FALSE, message=FALSE}
+library(tidyverse)
+library(rgl)
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+library(ISLR)
+library(caret)
+setupKnitr()
+```
+
+```{r, echo = FALSE, rgl=TRUE}
+x1_lower <- 0
+x1_upper <- 5
+x2_lower <- 0
+x2_upper <- 5
+X1 <- unexpanded_X_solid <- seq(from = x1_lower, to = x1_upper, length = 101)
+X2 <- unexpanded_Y_solid <- seq(from = x2_lower, to = x2_upper, length = 101)
+plot_df_0 <- as.data.frame(expand.grid(X = unexpanded_X_solid, Y = unexpanded_Y_solid))
+names(plot_df_0) <- c("X1", "X2")
+
+beta0 <- -7
+beta1 <- 1
+beta2 <- 2
+plot_df_0 <- plot_df_0 %>%
+  mutate(
+    prob_default = exp(beta0 + beta1 * X1 + beta2 * X2) / (1 + exp(beta0 + beta1 * X1 + beta2 * X2))
+  )
+
+color_n <- 1000 # number of colors used
+prob_default_lim <- range(plot_df_0$prob_default)
+prob_default_range <- prob_default_lim[2] - prob_default_lim[1]
+prob_default_colorlut <- rev(rainbow(1000, start = 0, end = 4/6)) # height color lookup table
+prob_default_col_0 <- prob_default_colorlut[ floor(color_n * (plot_df_0$prob_default - prob_default_lim[1])/prob_default_range) + 1 ]
+
+junk <- open3d()
+z_max <- prob_default_lim[2]
+plot3d(X1, X2, xlim=c(x1_lower, x1_upper), ylim=c(x2_lower, x2_upper), zlim=c(0, z_max), zlab="f(X1, X2)", xlab = "X1", ylab = "X2", mouseMode = "zAxis", type = "n", aspect = FALSE)
+surface3d(X1, X2, plot_df_0$prob_default, alpha = 0.7, col = prob_default_col_0)
+#surface3d(X1_solid, X2_solid, plot_df_0_solid$joint_density, alpha = 1, col = "grey")
+#polygon3d(x1_lower_side$x1, x1_lower_side$x2, x1_lower_side$z, coords = 2:3, col = "grey")
+#polygon3d(x1_upper_side$x1, x1_upper_side$x2, x1_upper_side$z, coords = 2:3, col = "grey")
+#polygon3d(x2_lower_side$x1, x2_lower_side$x2, x2_lower_side$z, coords = c(1, 3), col = "grey")
+#polygon3d(x2_upper_side$x1, x2_upper_side$x2, x2_upper_side$z, coords = c(1, 3), col = "grey")
+
+#rglwidget(elementId = "plot_bivarnorm0_integral")
+
+par3d(list(
+    userMatrix = structure(c(0.670073330402374, -0.244383126497269, 
+    0.700912654399872, 0, 0.741270184516907, 0.269900679588318, 
+    -0.614550352096558, 0, -0.0389910526573658, 0.931359469890594, 
+    0.362007141113281, 0, 0, 0, 0, 1), .Dim = c(4L, 4L))))
+```
+
+## Running Example
+
+This example is adapted from section 4.3 of ISLR.  We have information on
+ten thousand customers; our goal is to predict which customers will default on
+their credit card debt.
+
+```{r, message = FALSE}
+head(Default, 4)
+```
+
+\newpage
+
+## Example 1: Two Quantitative Variables
+
+Let's try using `balance` and `income` as explanatory variables.
+
+```{r}
+fit <- train(
+  form = default ~ balance + income,
+  data = Default,
+  family = "binomial", # this is an argument to glm; response is 0 or 1, binomial
+  method = "glm", # method for fit; "generalized linear model"
+  trControl = trainControl(method = "none")
+)
+summary(fit)
+```
+
+#### (a) What is the estimated equation for this model?
+
+\vspace{3cm}
+
+#### (b) What is the decision boundary?
+
+\begin{align*}
+0.5 = \hat{P}(Y_i = 1 | X_{i1}, \ldots, X_{ip}) = \hat{f}_1(X_{i1}, \ldots, X_{ip}) &= \frac{e^{\hat{\beta}_0 + \hat{\beta}_1 X_{i1} + \hat{\beta}_2 X_{i2}}}{1 + e^{\hat{\beta}_0 + \hat{\beta}_1 X_{i1} + \hat{\beta}_2 X_{i2}}}
+\end{align*}
+
+\vspace{3cm}
+
+#### Plots
+
+```{r}
+df2 <- Default %>%
+  mutate(
+    pred = predict(fit, type = "prob")[["Yes"]]
+  )
+  
+ggplot(data = df2, mapping = aes(x = balance, y = income, color = pred)) +
+  geom_point() +
+  geom_abline(intercept = 1.154e+01 / 2.081e-05, slope = - 5.647e-03 / 2.081e-05) +
+  scale_color_gradient2(low = scales::muted("blue"), high = scales::muted("red"), midpoint = 0.5)
+```
+
+```{r, fig.height = 4}
+max_balance <- max(Default$balance)
+max_income <- max(Default$income)
+background <- expand.grid(
+    balance = seq(from = 0, to = max_balance, length = 101),
+    income = seq(from = 0, to = max_income, length = 101))
+background <- background %>%
+  mutate(
+    est_prob_default = predict(fit, newdata = background, type = "prob")[["Yes"]],
+    est_default = predict(fit, newdata = background)
+  )
+
+ggplot() +
+  geom_raster(data = background,
+    mapping = aes(x = balance, y = income, fill = est_default), alpha = 0.5) +
+  geom_point(data = Default, mapping = aes(x = balance, y = income, color = default)) +
+  scale_color_discrete("Default") +
+  geom_abline(intercept = 1.154e+01 / 2.081e-05, slope = - 5.647e-03 / 2.081e-05)
+```
+
+```{r, echo = FALSE, rgl=TRUE}
+x1_lower <- 0
+x1_upper <- 3000
+x2_lower <- 0
+x2_upper <- 80000
+X1 <- unexpanded_X_solid <- seq(from = x1_lower, to = x1_upper, length = 101)
+X2 <- unexpanded_Y_solid <- seq(from = x2_lower, to = x2_upper, length = 101)
+plot_df_0 <- as.data.frame(expand.grid(X = unexpanded_X_solid, Y = unexpanded_Y_solid))
+names(plot_df_0) <- c("balance", "income")
+
+plot_df_0$prob_default <- predict(fit, newdata = plot_df_0, type = "prob")[["Yes"]]
+
+color_n <- 1000 # number of colors used
+prob_default_lim <- range(plot_df_0$prob_default)
+prob_default_range <- prob_default_lim[2] - prob_default_lim[1]
+prob_default_colorlut <- rev(rainbow(1000, start = 0, end = 4/6)) # height color lookup table
+prob_default_col_0 <- prob_default_colorlut[ floor(color_n * (plot_df_0$prob_default - prob_default_lim[1])/prob_default_range) + 1 ]
+
+junk <- open3d()
+z_max <- prob_default_lim[2]
+plot3d(X1, X2, xlim=c(x1_lower, x1_upper), ylim=c(x2_lower, x2_upper), zlim=c(0, z_max), zlab="f(x1, x2)", xlab = "x1 (balance)", ylab = "x2 (income)", mouseMode = "zAxis", type = "s")
+surface3d(X1, X2, plot_df_0$prob_default, alpha = 0.3, col = prob_default_col_0)
+#surface3d(X1_solid, X2_solid, plot_df_0_solid$joint_density, alpha = 1, col = "grey")
+#polygon3d(x1_lower_side$x1, x1_lower_side$x2, x1_lower_side$z, coords = 2:3, col = "grey")
+#polygon3d(x1_upper_side$x1, x1_upper_side$x2, x1_upper_side$z, coords = 2:3, col = "grey")
+#polygon3d(x2_lower_side$x1, x2_lower_side$x2, x2_lower_side$z, coords = c(1, 3), col = "grey")
+#polygon3d(x2_upper_side$x1, x2_upper_side$x2, x2_upper_side$z, coords = c(1, 3), col = "grey")
+
+par3d(list(
+    userMatrix = structure(c(0.670073330402374, -0.244383126497269, 
+    0.700912654399872, 0, 0.741270184516907, 0.269900679588318, 
+    -0.614550352096558, 0, -0.0389910526573658, 0.931359469890594, 
+    0.362007141113281, 0, 0, 0, 0, 1), .Dim = c(4L, 4L))))
+```
+
+## Example 2: One Categorical Explanatory variable
+
+```{r}
+fit <- train(
+  form = default ~ student,
+  data = Default,
+  family = "binomial", # this is an argument to glm; response is 0 or 1, binomial
+  method = "glm", # method for fit; "generalized linear model"
+  trControl = trainControl(method = "none")
+)
+summary(fit)
+```
+
+Similar to the use of categorical explanatory variables in linear models, R has
+created a new indicator variable for use in the regression:
+
+\begin{align*}
+X_{i1} = \text{studentYes}_i = \begin{cases} 1 \text{ if customer $i$ is a student} \\
+0 \text{ otherwise} \end{cases}
+\end{align*}
+
+#### (a) What is the estimated equation for this model?
+
+\newpage
+
+#### (b) What is the predicted probability of default for a non-student?
+
+\vspace{2cm}
+
+```{r}
+predict(fit, newdata = data.frame(student = "No"), type = "prob")[["Yes"]]
+
+# compare to...
+exp(-3.50413) / (1 + exp(-3.50413))
+
+Default %>%
+  filter(student == "No") %>%
+  summarize(prop_default = mean(default == "Yes"))
+```
+
+#### (c) What are the estimated odds of default for a non-student?
+
+\vspace{2cm}
+
+#### (d) What is the predicted probability of default for a student?
+
+\vspace{2cm}
+
+```{r}
+predict(fit, newdata = data.frame(student = "Yes"), type = "prob")[["Yes"]]
+
+# compare to...
+exp(-3.50413 + 0.40489) / (1 + exp(-3.50413 + 0.40489))
+
+Default %>%
+  filter(student == "Yes") %>%
+  summarize(prop_default = mean(default == "Yes"))
+```
+
+#### (e) What are the estimated odds of default for a student?
+
+\vspace{2cm}
+
+#### (f) What is the interpretation of $\hat{\beta}_1$?
+
+```{r}
+exp(0.40489)
+```
+
+\vspace{2cm}
+
+#### (g) Does someone's student status have a statistically significant association with whether or not they default?
+
+\vspace{1cm}
+
+#### Note about decision boundaries
+
+* In this example, our predicted class is 0 for all values of $x_i$!
+* In general, a decision boundary need not exist; this often happens with categorical explanatory variables.
+
+\newpage
+
+## Example 3: All 3 Explanatory Variables
+
+```{r}
+fit <- train(
+  form = default ~ student + balance + income,
+  data = Default,
+  family = "binomial", # this is an argument to glm; response is 0 or 1, binomial
+  method = "glm", # method for fit; "generalized linear model"
+  trControl = trainControl(method = "none")
+)
+summary(fit)
+```
+
+#### (a) What is the estimated equation for this model?
+
+\vspace{2cm}
+
+#### (b) Does an individual's student status have a statistically significant association with whether or not they default?  Compare your estimate to that from example 2.
+
+\vspace{2cm}
+
+#### (c) Does an individual's income have a statistically significant association with whether or not they default?  Compare to your result from example 1.
+
+\vspace{2cm}
+
+#### (d) What is the estimated equation for non-students?
+
+\vspace{2cm}
+
+#### (e) What is the estimated equation for students?
+
+\vspace{2cm}
+
+
+#### (f) What is the interpretation of the coefficient for `studentYes`?  Note that $e^{-0.6468} \approx 0.523719$.
+
+\vspace{2cm}
+
+#### (g) What is the interpretation of the coefficient for `balance`?  Note that $e^{0.005737} \approx 1.005753$.  Is it helpful to consider that $e^{(0.005737 * 100)} \approx 1.775$?
+
+\newpage
+
+#### (h) Tests about more than one coefficient
+
+This is a little artificial, but to demonstrate the code let's consider a test of the hypotheses that neither of the `student` and the `income` variables are related to the probability that a person will default.  We will:
+
+ * fit a reduced model (similar to what we would do in a `lm` context)
+ * call `anova` to compare the reduced and full model
+    * Unlike `anova` comparisons with linear models, we need to specify a `test` argument to `anova`.  A common option is `test = "LRT"` (for likelihood ratio test).  This is a large-sample approximate test procedure (see Stat 343).
+
+```{r}
+fit_reduced <- train(
+  form = default ~ balance,
+  data = Default,
+  family = "binomial", # this is an argument to glm; response is 0 or 1, binomial
+  method = "glm", # method for fit; "generalized linear model"
+  trControl = trainControl(method = "none")
+)
+anova(fit_reduced$finalModel, fit$finalModel, test = "LRT")
+```
+
+\newpage
+
+## Ethical Considerations
+
+In the U.S., there is a history of discrimination against demographic groups in granting loans.  The Equal Credit Opportunity Act was passed in 1974, and "makes it unlawful for any creditor to discriminate against any applicant, with respect to any aspect of a credit transaction, on the basis of race, color, religion, national origin, sex, marital status, or age (provided the applicant has the capacity to contract)" (https://en.wikipedia.org/wiki/Equal_Credit_Opportunity_Act).
+
+Our model uses the covariates `balance`, `income`, and `student` to predict probability of loan default, which are allowed by the law.  However, it's a fact that some of the covariates in our model (like `balance` and `income`) are correlated with protected characteristics like race, sex, or marital status.  At a population level, the model we've developed would deem women and people of color creditworthy at lower rates than other groups.

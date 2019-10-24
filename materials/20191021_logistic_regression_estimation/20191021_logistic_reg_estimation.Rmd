@@ -1,0 +1,199 @@
+---
+title: "Estimation for Logistic Regression Models"
+output:
+  pdf_document:
+    keep_tex: true
+geometry: margin=1.5cm
+header-includes:
+   - \usepackage{booktabs}
+   - \usepackage{multicol}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+## Example: Birthweight and bronchopulmonary dysplasia
+
+Can we estimate probability of bronchopulmonary dysplasia (BPD, a lung disease that affects newborns) as a function of the baby's birth weight?
+
+Data from Pagano, M. and Gauvreau, K. (1993). *Principles of Biostatistics*. Duxbury Press.
+
+\begin{align*}
+Y_i &= \begin{cases} 1 & \text{ if baby number $i$ has BPD} \\ 0 & \text{ otherwise} \end{cases} \\
+X_i &= \text{ birth weight for baby number $i$}
+\end{align*}
+
+```{r, message = FALSE, warning=FALSE, echo = FALSE}
+library(tidyverse)
+bpd <- read_table2("http://www.stat.cmu.edu/~larry/all-of-nonpar/=data/bpd.dat")
+```
+
+```{r, eval = TRUE}
+head(bpd)
+```
+
+```{r, echo = FALSE}
+fit <- glm(BPD ~ birthweight, data = bpd, family = binomial)
+```
+
+
+```{r, echo = FALSE, fig.height = 1.75}
+#' Calculate predictions based on the logistic regression fit called "fit"
+#' (obtained on page 5)
+#'
+#' @param x a vector of values for birthweight at which we want to make predictions
+#'
+#' @return a vector of estimated probabilitities that there will be O-ring damage
+pred_logistic <- function(x) {
+  predict(fit, newdata = data.frame(birthweight = x), type = "response")
+}
+
+ggplot(data = bpd, mapping = aes(x = birthweight, y = BPD)) +
+  geom_point() +
+  stat_function(fun = pred_logistic)
+```
+
+The parameter estimates for our model fit are $\hat{\beta}_0 = 4.03429128$ and $\hat{\beta}_1 = -0.00422914$.
+
+#### Joint Probability of Observed Data
+
+For a fixed value of $\beta_0$ and $\beta_1$, the probability assigned to the observed data $y_1, \ldots, y_n$ is:
+
+\begin{align*}
+&P(Y_1 = y_1, Y_2 = y_2, \ldots, Y_n = y_n \vert x_1, \ldots, x_n) = P(Y_1 = y_1 \vert x_1) P(Y_2 = y_2 \vert x_2) \cdots P(Y_n = y_n \vert x_n) \\
+&\qquad = \prod_{i: y_i = 1} \frac{e^{\beta_0 + \beta_1 x_i}}{1 + e^{\beta_0 + \beta_1 x_i}} \prod_{i: y_i = 0} \frac{1}{1 + e^{\beta_0 + \beta_1 x_i}}
+\end{align*}
+
+Based on the parameter estimates for our model ($\hat{\beta}_0 = 4.03429128$ and $\hat{\beta}_1 = -0.00422914$), the joint probability assigned to the data is:
+
+```{r}
+bpd_augmented <- bpd %>%
+  mutate(
+    est_prob_Y_eq_1 =
+      exp(4.03429128 - 0.00422914 * birthweight) / (1 + exp(4.03429128 - 0.00422914 * birthweight)),
+    est_prob_Y_eq_y = ifelse(BPD == 1, est_prob_Y_eq_1, 1 - est_prob_Y_eq_1)
+  )
+
+head(bpd_augmented, 3)
+nrow(bpd_augmented)
+
+prod(bpd_augmented$est_prob_Y_eq_y)
+```
+
+#### Maximum likelihood estimation
+
+The best choice of $\beta_0$ and $\beta_1$ assigns highest probability to the observed data.
+
+$\max_{\beta_0, \beta_1} \,\,\, \text{Likelihood}(\beta_0, \beta_1) = \prod_{i: y_i = 1} \frac{e^{\beta_0 + \beta_1 x_i}}{1 + e^{\beta_0 + \beta_1 x_i}} \prod_{i: y_i = 0} \frac{1}{1 + e^{\beta_0 + \beta_1 x_i}}$
+
+```{r, echo = FALSE, cache = TRUE}
+#' Function to calculate probability of observed data in bpd data set
+#'
+#' @param beta_0 a value for the intercept parameter in the logistic regression model
+#' @param beta_1 a value for the slope parameter in the logistic regression model
+#'
+#' @return joint probability of the observed data in bpd data set,
+#' if the specified parameters are used in a logistic regression model
+calc_prob <- function(beta_0, beta_1) {
+  bpd_augmented <- bpd %>%
+    mutate(
+      est_prob_Y_eq_1 = exp(beta_0 + beta_1 * birthweight) / (1 + exp(beta_0 + beta_1 * birthweight)),
+      est_prob_Y_eq_y = ifelse(BPD == 1, est_prob_Y_eq_1, 1 - est_prob_Y_eq_1)
+    )
+  
+  prod(bpd_augmented$est_prob_Y_eq_y)
+}
+
+# Set up a grid of values to use in making a plot
+# I chose these through experimentation to make the plot look "nice"
+beta_0_min <- 4.0342913 - 1
+beta_0_max <- 4.0342913 + 1
+beta_1_min <- -0.0042291 - 0.001
+beta_1_max <- -0.0042291 + 0.001
+
+betas_grid <- expand.grid(
+  beta_0 = seq(from = beta_0_min, to = beta_0_max, length = 201),
+  beta_1 = seq(from = beta_1_min, to = beta_1_max, length = 201)
+)
+
+# Add a new variable to betas_grid data frame, the probablity of the
+# observed data in a logistic regression model with the specified values of
+# beta_0 and beta_1
+betas_grid <- betas_grid %>%
+  mutate(
+    data_prob = pmap_dbl(betas_grid, calc_prob)
+  )
+
+#head(betas_grid)
+```
+
+```{r, echo = FALSE}
+# Data frame with the maximum likelihood estimates of the parameters
+mle_est <- data.frame(
+  beta_0 = 4.0342913,
+  beta_1 = -0.0042291,
+  est_name = "Maximum Likelihood Estimate"
+)
+
+# Make a plot
+# geom_raster fills in colors in a grid of rectangular cells
+# scale_fill_viridis_c is a colorblind-friendly color palette for continuous variables
+# expression is R's "plotmath" expressions, for greek letters and similar
+ggplot() +
+  geom_raster(data = betas_grid, mapping = aes(x = beta_0, y = beta_1, fill = data_prob)) +
+  geom_point(data = mle_est, mapping = aes(x = beta_0, y = beta_1, shape = est_name)) +
+  scale_shape_manual("Maximum\nLikelihood\nEstimate", labels = NULL, values = 3) +
+  scale_fill_gradientn("Probability\nof Observed\nData", colors = c("#0D0887FF", "#6A00A8FF", "#B12A90FF", "#E16462FF", "#FCA636FF", "#F0F921FF")) +
+#  xlim(c(4.0342913 - 0.3, 4.0342913 + 0.3)) +
+#  ylim(c(-0.0042291 - 0.013, -0.0042291 + 0.013)) +
+  xlab(expression(beta[0])) +
+  ylab(expression(beta[1]))
+```
+
+```{r, echo = FALSE, fig.height = 1.75}
+# Fit logistic regression model
+fit <- glm(BPD ~ birthweight, data = bpd, family = binomial)
+
+#' Function to calculate probability of observed data in bpd data set
+#'
+#' @param beta_0 a value for the intercept parameter in the logistic regression model
+#' @param beta_1 a value for the slope parameter in the logistic regression model
+#'
+#' @return joint probability of the observed data in bpd data set,
+#' if the specified parameters are used in a logistic regression model
+calc_prob <- function(beta_0, beta_1, birthweight) {
+  results <- data.frame(
+      beta_0 = beta_0,
+      beta_1 = beta_1,
+      birthweight = birthweight
+    ) %>%
+    mutate(
+      prob_BPD = exp(beta_0 + beta_1 * birthweight) / (1 + exp(beta_0 + beta_1 * birthweight))
+    )
+  
+  return(results)
+}
+
+birthweight_grid <- seq(from = min(bpd$birthweight), to = max(bpd$birthweight), length = 101)
+beta_1_min <- -0.0042291 - 0.005
+beta_1_max <- -0.0042291 + 0.005
+
+betas_grid <- expand.grid(
+  beta_0 = 4.0342913,
+  beta_1 = seq(from = beta_1_min, to = beta_1_max, length = 11)
+)
+
+logistic_preds <- pmap_dfr(betas_grid, calc_prob, birthweight = birthweight_grid)
+logistic_preds <- logistic_preds %>% mutate(
+  MLE = ifelse(abs(beta_1 - -0.0042291) < 0.001, "MLE", "Not MLE")
+)
+
+ggplot() +
+  geom_line(data = logistic_preds,
+    mapping = aes(x = birthweight, y = prob_BPD, color = MLE, group = factor(beta_1))) +
+  geom_point(data = bpd,
+    mapping = aes(x = birthweight, y = BPD),
+    position = position_jitter(width = 0, height = 0.1)) +
+  scale_color_manual(values = c("orange", "cornflowerblue"))
+```

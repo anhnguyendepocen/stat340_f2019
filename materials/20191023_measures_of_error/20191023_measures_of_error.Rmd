@@ -1,0 +1,228 @@
+---
+title: "Measures of Classification Performance"
+output: pdf_document
+---
+
+We have a data set from our text book with "5822 real customer records. Each record consists of 86 variables, containing sociodemographic data (variables 1-43) and product ownership (variables 44-86). The sociodemographic data is derived from zip codes. All customers living in areas with the same zip code have the same sociodemographic attributes. Variable 86 (Purchase) indicates whether the customer purchased a caravan insurance policy."
+
+```{r, echo = FALSE, message = FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+library(ISLR) # has our data set
+Caravan <- as_tibble(Caravan)
+```
+
+```{r}
+head(Caravan)
+Caravan %>%
+  count(Purchase)
+
+348/5474
+```
+
+Only 6% of people in the data set purchased an insurance policy.
+
+\newpage
+
+### Logistic Regression Model
+
+Let's try predicting Purchase status using all other explanatory variables.  For today, we will look at training set performance; ordinarily, you'd look at performance on a test set.
+
+```{r}
+library(caret)
+
+# The . in the right hand side of the formula says to use all other variables in the
+# data set as predictors
+fit <- train(
+  form = Purchase ~ .,
+  data = Caravan,
+  family = "binomial", # this is an argument to glm; response is 0 or 1, binomial
+  method = "glm", # method for fit; "generalized linear model"
+  trControl = trainControl(method = "none")
+)
+summary(fit)
+```
+
+\newpage
+
+### Confusion Matrix
+
+```{r}
+preds <- predict(fit) # if you were doing test set predictions, you'd have to specify newdata here!
+
+table(Caravan$Purchase, preds)
+```
+
+ * Since I provided the observed response `Caravan$Purchase` as the first argument to `table` and `preds` as the second argument to `table`:
+    * The rows have observed values
+    * The columns have predicted values
+    * For example, there were 8 people who were predicted to make a purchase who did not actually make a purchase
+
+There is a bewildering array of different summaries of classification performance that are often calculated based on the confusion matrix.  Here are some:
+
+#### Classification Accuracy: Out of all predictions, what proportion were correct?
+
+ * We prefer higher classification accuracy
+ * How would this be calculated based on the confusion matrix above?
+
+\vspace{1cm}
+
+#### Classification Error Rate: Out of all predictions, what proportion were incorrect?
+
+ * We prefer lower classification error rate
+ * How would this be calculated based on the confusion matrix above?
+
+\vspace{1cm}
+ 
+#### False Positive Rate: Out of the "negative" cases, how many did we incorrectly predict to be "positive"?
+
+ * We prefer lower false positive rate
+ * Synonyms: Type I Error, 1 - Specificity
+ * How would this be calculated based on the confusion matrix above?
+
+\vspace{1cm}
+ 
+#### True Positive Rate: Out of the "positive" cases, how many did we correctly predict to be "positive"?
+
+ * We prefer higher true positive rate
+ * Synonyms: 1 - Type II Error, Power, Sensitivity, Recall
+ * How would this be calculated based on the confusion matrix above?
+
+\vspace{1cm}
+ 
+#### Positive Predictive Value: Out of our "positive" predictions, how many were correct?
+
+ * We prefer higher positive predictive value
+ * Synonyms: Precision, 1 - False Discovery Proportion
+ * How would this be calculated based on the confusion matrix above?
+
+\vspace{1cm}
+
+ 
+#### Negative Predictive Value: Out of our "negative" predictions, how many were correct?
+
+ * We prefer higher negative predictive value
+ * How would this be calculated based on the confusion matrix above?
+
+ 
+\newpage
+
+### Different classification threshold changes Accuracy/etc.
+
+ * Maybe the company wants to use predictions to follow up with any potential customers.
+ * They might be more interested in ensuring that most potential customers are predicted to Purchase, even if this means they place more unnecessary calls to people who don't end up purchasing.
+ * We can achieve this for example by predicting "Yes" if the model's estimated probability of purchasing is at least 0.05:
+
+```{r}
+# if you were doing test set predictions, you'd have to specify newdata here!
+preds_prob <- predict(fit, type = "prob")[["Yes"]]
+head(preds_prob)
+preds <- ifelse(preds_prob > 0.05, "Yes", "No")
+head(preds)
+
+table(Caravan$Purchase, preds)
+```
+
+#### With this threshold, what is our true positive rate?
+
+\vspace{1cm}
+
+#### With this threshold, what is our false positive rate?
+
+\vspace{1cm}
+
+\newpage
+
+### ROC and AUC
+
+ * As we vary our probability threshold for classification, how do our false positive fraction and true positive fraction change?
+
+Code from https://stackoverflow.com/questions/31138751/roc-curve-from-training-data-in-caret
+
+```{r, fig.height=3.9}
+library(plotROC)
+
+# add two variables to the data frame: predicted probability of being in class 1
+# and a 0/1 version of the response variable (required by geom_roc)
+Caravan <- Caravan %>%
+  mutate(
+    f1_hat = predict(fit, type = "prob")[["Yes"]],
+    Purchase_01 = ifelse(Purchase == "Yes", 1, 0)
+  )
+
+p <- ggplot(data = Caravan, mapping = aes(m = f1_hat, d = Purchase_01)) + 
+  geom_roc(cutoffs.at = c(0.05, 0.5), cutoff.labels = c("0.05", "0.5")) + 
+  coord_equal() +
+  style_roc()
+p
+```
+
+#### The Area Under the ROC Curve (AUC) is between 0 and 1.  Is it better if it's closer to 0 or closer to 1?
+
+```{r}
+calc_auc(p)
+```
+
+\newpage
+
+
+### Adding on ROC for a KNN fit using just a few variables:
+
+```{r}
+knn_fit <- train(
+  form = Purchase ~ MGEMLEEF + PPERSAUT + PBRAND + APLEZIER,
+  data = Caravan,
+  preProcess = "scale",
+  method = "knn",
+  trControl = trainControl(method = "none")
+)
+
+Caravan <- Caravan %>%
+  mutate(
+    knn_f1_hat = predict(knn_fit, type = "prob")[["Yes"]]
+  )
+
+p <- ggplot(data = Caravan) + 
+  geom_roc(mapping = aes(m = f1_hat, d = Purchase_01)) +
+  geom_roc(mapping = aes(m = knn_f1_hat, d = Purchase_01), color = "cornflowerblue") +
+  coord_equal() +
+  style_roc()
+
+p
+```
+
+\newpage
+
+```{r}
+# auc for each model separately
+p_logistic_only <- ggplot(data = Caravan) + 
+    geom_roc(mapping = aes(m = f1_hat, d = Purchase_01))
+p_knn_only <- ggplot(data = Caravan) + 
+    geom_roc(mapping = aes(m = knn_f1_hat, d = Purchase_01))
+calc_auc(p_logistic_only)
+calc_auc(p_knn_only)
+```
+
+\newpage
+
+### Log Score
+
+ * The log score is the log of the probability assigned do the observed data by the model:
+
+\begin{align*}
+&\log\{P(Y_1 = y_1, Y_2 = y_2, \ldots, Y_n = y_n | x_1, \ldots, x_n)\} = \log \left\{ \prod_{i = 1}^n P(Y_i = y_i | x_i) \right\} \\
+&\qquad = \sum_{i=1}^{n} \log\left\{P(Y_i = y_i | x_i) \right\}
+\end{align*}
+
+ * Since $\log$ is an increasing function, a higher probability of observed data gives a higher log score.
+
+```{r}
+Caravan <- Caravan %>%
+  mutate(
+    est_f_obs = ifelse(Purchase == "Yes", f1_hat, 1 - f1_hat),
+    knn_est_f_obs = ifelse(Purchase == "Yes", knn_f1_hat, 1 - knn_f1_hat)
+  )
+
+sum(log(Caravan$est_f_obs))
+sum(log(Caravan$knn_est_f_obs))
+```

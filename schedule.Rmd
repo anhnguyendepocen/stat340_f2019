@@ -248,7 +248,9 @@ make_week_box("week8", TRUE, "Week 8: Oct 21 -- Oct 25", "
 
 #### Fri, Oct 25
  * **In class**, we will work on:
-    * Multinomial Logistic Regression
+    * Multinomial Logistic Regression and AIC
+        * Lecture notes [pdf](materials/20191025_multinomial_logistic/lecture_notes.pdf)
+        * Handout about multnomial logistic regression [pdf](materials/20191025_multinomial_logistic/20191025_multinomial_logistic.pdf)
  * **After class**, please:
 ")
 ```
@@ -257,8 +259,9 @@ make_week_box("week8", TRUE, "Week 8: Oct 21 -- Oct 25", "
 make_week_box("week9", TRUE, "Week 9: Oct 28 -- Nov 01", "
 #### Mon, Oct 28
  * **In class**, we will work on:
+    * Penalized estimation
  * **After class**, please:
-
+    * Work on HW due Wed Oct 30
 
 #### Wed, Oct 30
  * **In class**, we will work on:

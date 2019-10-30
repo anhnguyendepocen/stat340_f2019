@@ -7,6 +7,7 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
@@ -69,9 +70,7 @@ h6 {
 </style>
 
 
-</head>
 
-<body>
 
 <style type = "text/css">
 .main-container {
@@ -85,7 +84,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -190,8 +188,6 @@ $(document).ready(function () {
 });
 </script>
 
-<div class="container-fluid main-container">
-
 <!-- tabsets -->
 
 <style type="text/css">
@@ -248,20 +244,17 @@ $(document).ready(function () {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
 
 
 
@@ -329,34 +322,48 @@ $(document).ready(function () {
 </thead>
 <tbody>
 <tr class="odd">
-<td><p>0 (HW0)</p></td>
+<td>0 (HW0)</td>
 <td><p>Optional Data Camp assignments.</p>
 <p>Register for our course on Data Camp at this link, and complete the assignment there: <a href="https://www.datacamp.com/groups/shared_links/05f4cfe1a97b39e7a1ec3c1515946eb67771d605" class="uri">https://www.datacamp.com/groups/shared_links/05f4cfe1a97b39e7a1ec3c1515946eb67771d605</a></p>
 <p>If you are already comfortable with R, you don’t need to do this.</p></td>
-<td><p>N/A</p></td>
-<td><p>0 (optional)</p></td>
-<td><p>N/A</p></td>
+<td>N/A</td>
+<td>0 (optional)</td>
+<td>N/A</td>
 </tr>
 <tr class="even">
-<td><p>1 (HW1)</p></td>
-<td><p>Prerequisites and day 1. This is just to make sure you feel comfortable with the foundations. You should have received an invitation to a GitHub repository with the assignment. Let me know if not.</p></td>
-<td><p>Sept. 13</p></td>
-<td><p>1</p></td>
-<td><p><a href="https://github.com/mhc-stat340-f2019-sec01/HW1-solutions.git" class="uri">https://github.com/mhc-stat340-f2019-sec01/HW1-solutions.git</a></p></td>
+<td>1 (HW1)</td>
+<td>Prerequisites and day 1. This is just to make sure you feel comfortable with the foundations. You should have received an invitation to a GitHub repository with the assignment. Let me know if not.</td>
+<td>Sept. 13</td>
+<td>1</td>
+<td><a href="https://github.com/mhc-stat340-f2019-sec01/HW1-solutions.git" class="uri">https://github.com/mhc-stat340-f2019-sec01/HW1-solutions.git</a></td>
 </tr>
 <tr class="odd">
-<td><p>2 (HW2)</p></td>
-<td><p>Linear Algebra view of linear regression models.</p></td>
-<td><p>Sept. 20</p></td>
-<td><p>1</p></td>
-<td><p><a href="https://github.com/mhc-stat340-f2019-sec01/HW2-solutions.git" class="uri">https://github.com/mhc-stat340-f2019-sec01/HW2-solutions.git</a></p></td>
+<td>2 (HW2)</td>
+<td>Linear Algebra view of linear regression models.</td>
+<td>Sept. 20</td>
+<td>1</td>
+<td><a href="https://github.com/mhc-stat340-f2019-sec01/HW2-solutions.git" class="uri">https://github.com/mhc-stat340-f2019-sec01/HW2-solutions.git</a></td>
 </tr>
 <tr class="even">
-<td><p>3 (HW3)</p></td>
-<td><p>Cross-validation, transformations, and issues with model specification and multiple comparisons.</p></td>
-<td><p>Oct. 5</p></td>
-<td><p>1</p></td>
-<td><p><a href="https://github.com/mhc-stat340-f2019-sec01/HW3-solutions.git" class="uri">https://github.com/mhc-stat340-f2019-sec01/HW3-solutions.git</a></p></td>
+<td>3 (HW3)</td>
+<td>Cross-validation, transformations, and issues with model specification and multiple comparisons.</td>
+<td>Oct. 5</td>
+<td>1</td>
+<td><a href="https://github.com/mhc-stat340-f2019-sec01/HW3-solutions.git" class="uri">https://github.com/mhc-stat340-f2019-sec01/HW3-solutions.git</a></td>
+</tr>
+<tr class="odd">
+<td>4 (HW4)</td>
+<td>K nearest neighbors.</td>
+<td>Oct. 19</td>
+<td>1</td>
+<td><a href="https://github.com/mhc-stat340-f2019-sec01/HW4-solutions.git" class="uri">https://github.com/mhc-stat340-f2019-sec01/HW4-solutions.git</a></td>
+</tr>
+<tr class="even">
+<td>5 (HW5)</td>
+<td>Logistic Regression.</td>
+<td>Oct. 30</td>
+<td>1</td>
+<td>Not yet posted</td>
 </tr>
 </tbody>
 </table>
@@ -378,6 +385,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

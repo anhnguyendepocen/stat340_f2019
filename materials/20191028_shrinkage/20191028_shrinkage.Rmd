@@ -1,0 +1,535 @@
+---
+title: "Penalized Estimation and Shrinkage"
+output:
+  pdf_document:
+    keep_tex: true
+geometry: margin=1.5cm
+header-includes:
+   - \usepackage{booktabs}
+   - \usepackage{multicol}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, warning=FALSE, message=FALSE, echo = FALSE}
+library(FNN)
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+library(purrr)
+library(glmnet)
+```
+
+## Challenge:
+
+ * Training set error (training MSE or training classification error) **always goes down** if we add more explanatory variables, higher degree polynomial terms, interactions, ....
+
+ * Test set error goes down for a while, then back up.
+
+## Two Running Examples
+
+### Example 1: Polynomial Regression
+
+Let's consider fitting polynomials of degree 10 to data generated from the following model:
+
+\begin{align*}
+X_i &\sim \text{Uniform}(-3, 3) \\
+Y_i &= 2 + 2 X_i - 2 X_i^2 + X_i^3 + \varepsilon_i \\
+\varepsilon_i &\sim \text{Normal}(0, 20) \\
+i &= 1, \ldots, 100
+\end{align*}
+
+```{r, echo = FALSE}
+true_f_poly <- function(x, beta0, beta1, beta2, beta3) {
+  beta0 + beta1 * x + beta2 * x^2 + beta3 * x^3
+}
+
+simulate_train_data_poly <- function(n, beta0, beta1, beta2, beta3, sigma) {
+  data.frame(
+    x = runif(n, min = -3, max = 3)
+  ) %>%
+    mutate(
+      y = true_f_poly(x, beta0, beta1, beta2, beta3) + rnorm(n, mean = 0, sd = sigma)
+    )
+}
+
+set.seed(974246)
+train_data <- simulate_train_data_poly(
+  n = 100,
+  beta0 =  2, beta1 = 2, beta2 = -2, beta3 = 1, sigma = 10)
+```
+
+```{r}
+head(train_data, 3)
+```
+
+```{r, echo = FALSE, fig.height=2.5}
+ggplot(data = train_data, mapping = aes(x = x, y = y)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 10), se = FALSE) +
+  stat_function(fun = true_f_poly,
+    args = list(beta0 =  2, beta1 = 2, beta2 = -2, beta3 = 1),
+    color = "orange")
+```
+
+```{r}
+lm_fit <- lm(y ~ poly(x, 10), data = train_data)
+coef(lm_fit)
+```
+
+#### What's the problem?
+
+Those coefficient estimates are too big!!
+
+\newpage
+
+### Example 2: Linear Regression with $p = 10$ possible explanatory variables, only 3 relevant
+
+\begin{align*}
+X_{i1}, \ldots, X_{i10} &\sim \text{Uniform}(-3, 3) \\
+Y_i &= 0 + 1 X_{i1} + 2 X_{i2} + 3 X_{i3} + 0 X_{i4} + 0 X_{i5} + 0 X_{i6} + 0 X_{i7} + 0 X_{i8} + 0 X_{i9} + 0 X_{i10} + \varepsilon_i \\
+\varepsilon_i &\sim \text{Normal}(0, 20) \\
+i &= 1, \ldots, 100
+\end{align*}
+
+```{r, echo = FALSE}
+true_f_p10 <- function(X, beta) {
+  X %*% beta
+}
+
+simulate_train_data_p10 <- function(n, beta, sigma) {
+  p <- 10
+  X <- matrix(runif(n * p, min = -3, max = 3), nrow = n, ncol = p)
+  result <- as.data.frame(X)
+  colnames(result) <- paste0("X", 1:p)
+  result <- result %>%
+    mutate(
+      y = true_f_p10(X, beta) + rnorm(n, mean = 0, sd = sigma)
+    )
+}
+
+train_data <- simulate_train_data_p10(
+  n = 100,
+  beta =  c(1, 2, 3, rep(0, 7)),
+  sigma = 20)
+```
+
+```{r}
+head(train_data)
+lm_fit <- lm(y ~ ., data = train_data)
+coef(lm_fit)
+```
+
+#### What's the problem?
+
+(Most of) those coefficient estimates are too big!!
+
+\newpage
+
+## Solution: Shrinkage, a.k.a. Penalized Estimation, a.k.a. Regularized Estimation
+
+### Application to polynomial regression example
+
+Recall that bias and variance are about behavior of estimators across all possible training sets.  To understand behavior, we will look at estimates from each method across 100 randomly generated training sets (each of size $n = 100$) from the model
+
+\vspace{-0.7cm}
+
+\begin{align*}
+X_i &\sim \text{Uniform}(-3, 3) \\
+Y_i &= 2 + 2 X_i - 2 X_i^2 + X_i^3 + \varepsilon_i \\
+\varepsilon_i &\sim \text{Normal}(0, 20)
+\end{align*}
+
+\vspace{-0.3cm}
+
+Code suppressed to avoid distraction, but here is what I did:
+
+ * Simulate 100 different data sets of size 100 from this model
+ * For each simulated data set, fit a degree 10 polynomial using each of the following procedures:
+    * OLS ($\lambda = 0$)
+    * LASSO with the following choices of $\lambda$:
+        * 0.01, 0.1, 1, 10, 100
+        * Cross-validated choice of $\lambda$ (the selected value was generally a little less than 1)
+    * Ridge Regression with the following choices of $\lambda$:
+        * 0.01, 0.1, 1, 10, 100
+        * Cross-validated choice of $\lambda$ (the selected value was generally a little less than 1)
+        
+Plot the resulting estimates $\hat{f}(x)$, with the true function $f(x)$ overlaid in orange.
+
+```{r poly_penalized_estimation, echo = FALSE, cache = TRUE, message = FALSE, warning=FALSE}
+set.seed(1)
+est_f_lm <- function(simulation_index, train_data, test_data) {
+  lm_fit <- lm(y ~ poly(x, 10), data = train_data)
+  test_data <- test_data %>%
+    mutate(
+      y_hat = predict(lm_fit, newdata = test_data),
+      id = paste0("lm_", simulation_index),
+      method = "OLS (lambda = 0)"
+    )
+}
+
+est_f_ridge_given_lambda <- function(simulation_index, train_data, test_data, lambda) {
+  y <- train_data$y
+  x_train <- model.matrix(y ~ poly(x, 10, raw = T), data = train_data)[, -1]
+  x_test <- model.matrix(~ poly(x, 10, raw = T), data = test_data)[,-1]
+
+  best.model <- glmnet(x_train, y, alpha = 0, lambda = lambda)
+  
+  test_data <- test_data %>%
+    mutate(
+      y_hat = predict(best.model, s = lambda, newx = x_test),
+      id = paste0("ridge_lambda_", lambda, simulation_index),
+      method = paste0("ridge, lambda = ", lambda)
+    )
+  
+  return(test_data)
+}
+
+
+est_f_ridge_cv <- function(simulation_index, train_data, test_data) {
+  y <- train_data$y
+  x_train <- model.matrix(y ~ poly(x, 10, raw = T), data = train_data)[, -1]
+  x_test <- model.matrix(~ poly(x, 10, raw = T), data = test_data)[,-1]
+  mod.lasso <- cv.glmnet(x_train, y, alpha = 0)
+  best.lambda <- mod.lasso$lambda.min
+  #cat(best.lambda)
+  best.model <- glmnet(x_train, y, alpha = 0)
+
+  test_data <- test_data %>%
+    mutate(
+      y_hat = predict(best.model, s = best.lambda, newx = x_test),
+      id = paste0("ridge_cv_", simulation_index),
+      method = "ridge, cross-validated lambda"
+    )
+  
+  return(test_data)
+}
+
+
+est_f_lasso_given_lambda <- function(simulation_index, train_data, test_data, lambda) {
+  y <- train_data$y
+  x_train <- model.matrix(y ~ poly(x, 10, raw = T), data = train_data)[, -1]
+  x_test <- model.matrix(~ poly(x, 10, raw = T), data = test_data)[,-1]
+
+  best.model <- glmnet(x_train, y, alpha = 1, lambda = lambda)
+  
+  test_data <- test_data %>%
+    mutate(
+      y_hat = predict(best.model, s = lambda, newx = x_test),
+      id = paste0("lasso_lambda_", lambda, simulation_index),
+      method = paste0("lasso, lambda = ", lambda)
+    )
+  
+  return(test_data)
+}
+
+
+est_f_lasso_cv <- function(simulation_index, train_data, test_data) {
+  y <- train_data$y
+  x_train <- model.matrix(y ~ poly(x, 10, raw = T), data = train_data)[, -1]
+  x_test <- model.matrix(~ poly(x, 10, raw = T), data = test_data)[,-1]
+  mod.lasso <- cv.glmnet(x_train, y, alpha = 1)
+  best.lambda <- mod.lasso$lambda.min
+  #cat(best.lambda)
+  best.model <- glmnet(x_train, y, alpha = 1)
+
+  test_data <- test_data %>%
+    mutate(
+      y_hat = predict(best.model, s = best.lambda, newx = x_test),
+      id = paste0("lasso_cv_", simulation_index),
+      method = "lasso, cross-validated lambda"
+    )
+  
+  return(test_data)
+}
+
+get_preds_one_sim <- function(simulation_index, lambdas) {
+  train_data <- simulate_train_data_poly(
+    n = 100,
+    beta0 =  2, beta1 = 2, beta2 = -2, beta3 = 1, sigma = 20)
+  
+  test_data <- data.frame(
+    x = seq(from = -2.5, to = 2.5, length = 101)
+  )
+  
+  bind_rows(
+    est_f_lm(simulation_index = simulation_index, train_data = train_data, test_data = test_data),
+    est_f_ridge_cv(simulation_index = simulation_index, train_data = train_data, test_data = test_data),
+    est_f_lasso_cv(simulation_index = simulation_index, train_data = train_data, test_data = test_data),
+    map_dfr(lambdas, est_f_ridge_given_lambda, simulation_index = simulation_index, train_data = train_data, test_data = test_data),
+    map_dfr(lambdas, est_f_lasso_given_lambda, simulation_index = simulation_index, train_data = train_data, test_data = test_data)
+  )
+}
+
+all_preds <- map_dfr(1:100, get_preds_one_sim, lambdas = c(0.01, 0.1, 1, 10, 100))
+```
+
+```{r, echo = FALSE, fig.height=10}
+all_preds <- all_preds %>% mutate(
+  method = factor(as.character(method), levels = c("OLS (lambda = 0)", "lasso, cross-validated lambda", paste0("lasso, lambda = ", c(0.01, 0.1, 1, 10, 100)), "ridge, cross-validated lambda", paste0("ridge, lambda = ", c(0.01, 0.1, 1, 10, 100))), ordered = TRUE)
+)
+
+fake_preds_ols <- all_preds %>% filter(method == "OLS (lambda = 0)")
+fake_preds_ols <- bind_rows(
+  fake_preds_ols,
+  fake_preds_ols %>% mutate(
+    method = " OLS (lambda = 0) "
+  )
+)
+p1 <- ggplot(data = fake_preds_ols, mapping = aes(x = x, y = y_hat, group = factor(id))) +
+  geom_line(alpha = 0.4) +
+  stat_function(fun = true_f_poly,
+    args = list(beta0 =  2, beta1 = 2, beta2 = -2, beta3 = 1),
+    color = "orange") +
+  facet_wrap( ~ method, ncol = 2)
+
+p2 <- ggplot(data = all_preds %>% filter(method != "OLS (lambda = 0)"), mapping = aes(x = x, y = y_hat, group = factor(id))) +
+  geom_line(alpha = 0.4) +
+  stat_function(fun = true_f_poly,
+    args = list(beta0 =  2, beta1 = 2, beta2 = -2, beta3 = 1),
+    color = "orange") +
+  facet_wrap( ~ method, dir = "v", ncol = 2)
+
+grid.arrange(p1, p2, ncol = 1, heights = grid::unit(c(0.2, 1), rep("null", 2)))
+```
+
+
+
+## Example with large $p$
+
+I simulated 200 data sets (each with $n = 100$ observations) from the model with $p = 10$ explanatory variables:
+
+\begin{align*}
+X_{i1}, \ldots, X_{i10} &\sim \text{Uniform}(-3, 3) \\
+Y_i &= 0 + 1 X_{i1} + 2 X_{i2} + 3 X_{i3} + 0 X_{i4} + 0 X_{i5} + 0 X_{i6} + 0 X_{i7} + 0 X_{i8} + 0 X_{i9} + 0 X_{i10} + \varepsilon_i \\
+\varepsilon_i &\sim \text{Normal}(0, 20) \\
+i &= 1, \ldots, 100
+\end{align*}
+
+
+For each simulated data set, I estimated the model with OLS, Ridge regression, and LASSO.
+
+Here are density plots summarizing the resulting coefficient estimates.
+
+```{r sim_large_p, message=FALSE, warning=FALSE, cache=TRUE, echo = FALSE}
+est_coef_lm <- function(simulation_index, train_data) {
+  lm_fit <- lm(y ~ ., data = train_data)
+
+  coef_ests <- data.frame(
+      coef_name = paste0("beta_", 0:(ncol(train_data) - 1)),
+      coef_hat = as.numeric(coef(lm_fit)),
+      id = paste0("lasso_cv_", simulation_index),
+      method = "OLS, (lambda = 0)"
+    )
+  
+  return(coef_ests)
+}
+
+est_coef_lasso_cv <- function(simulation_index, train_data) {
+  y <- train_data$y
+  x_train <- model.matrix(y ~ ., data = train_data)[, -1]
+  mod.lasso <- cv.glmnet(x_train, y, alpha = 1)
+  best.lambda <- mod.lasso$lambda.min
+  #cat(best.lambda)
+  #best.model <- glmnet(x_train, y, alpha = 1)
+
+  coef_ests <- data.frame(
+      coef_name = paste0("beta_", 0:ncol(x_train)),
+      coef_hat = as.numeric(coef(mod.lasso, s = best.lambda)),
+      id = paste0("lasso_cv_", simulation_index),
+      method = "lasso, cross-validated lambda"
+    )
+  
+  return(coef_ests)
+}
+
+
+est_coef_ridge_cv <- function(simulation_index, train_data) {
+  y <- train_data$y
+  x_train <- model.matrix(y ~ ., data = train_data)[, -1]
+  mod.lasso <- cv.glmnet(x_train, y, alpha = 0)
+  best.lambda <- mod.lasso$lambda.min
+  #cat(best.lambda)
+  #best.model <- glmnet(x_train, y, alpha = 1)
+
+  coef_ests <- data.frame(
+      coef_name = paste0("beta_", 0:ncol(x_train)),
+      coef_hat = as.numeric(coef(mod.lasso, s = best.lambda)),
+      id = paste0("lasso_cv_", simulation_index),
+      method = "ridge, cross-validated lambda"
+    )
+  
+  return(coef_ests)
+}
+
+
+get_coefs_one_sim <- function(simulation_index, lambdas) {
+  train_data <- simulate_train_data_p10(
+    n = 100,
+    beta =  c(1, 2, 3, rep(0, 7)),
+    sigma = 10)
+
+  bind_rows(
+    est_coef_lm(simulation_index = simulation_index, train_data = train_data),
+    est_coef_ridge_cv(simulation_index = simulation_index, train_data = train_data),
+    est_coef_lasso_cv(simulation_index = simulation_index, train_data = train_data)
+  )
+}
+
+all_coef_ests <- map_dfr(1:200, get_coefs_one_sim)
+```
+
+
+```{r, echo = FALSE, fig.height= 6}
+all_coef_ests <- all_coef_ests %>%
+  mutate(
+    coef_name = factor(as.character(coef_name), levels = paste0("beta_", 0:10), ordered = TRUE)
+  )
+
+ggplot(data = all_coef_ests %>% filter(coef_name %in% paste0("beta_", 0:11)), mapping = aes(x = coef_hat, color = method)) +
+  geom_density() +
+  facet_wrap( ~ coef_name, ncol = 3, scales = "free")
+```
+
+ * We introduced a small amount of bias in estimates of the three non-zero coefficients, in exchange for a large reduction in variance of estimates of the remaining coefficients.
+ * This bias-variance trade-off in coefficient estimates translates into a bias-variance trade-off in prediction errors.
+ * LASSO is more aggressive in setting coefficient estimates to 0 than Ridge regression
+    * LASSO is preferred if many $\beta$'s are close to 0
+    * Ridge is preferred if not
+
+\newpage
+
+## Example: Prostrate Cancer
+
+This example comes from Chapter 3 of Elements of Statistical Learning.  Here's a quote from that book describing the setting:
+
+> The data for this example come from a study by Stamey et al. (1989). They
+examined the correlation between the level of prostate-specific antigen and
+a number of clinical measures in men who were about to receive a radical
+prostatectomy. The variables are log cancer volume (lcavol), log prostate
+weight (lweight), age, log of the amount of benign prostatic hyperplasia
+(lbph), seminal vesicle invasion (svi), log of capsular penetration (lcp),
+Gleason score (gleason), and percent of Gleason scores 4 or 5 (pgg45).
+
+Our goal is to understand the relationship between these explanatory variables and the level of prostrate-specific antigen.
+
+```{r, message = FALSE}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(caret)
+library(leaps) # functionality for best subsets regression
+
+prostrate <- read_table2("http://www.evanlray.com/data/ESL/prostate.data")
+prostrate <- prostrate %>%
+  select(-ID, -train)
+head(prostrate)
+dim(prostrate)
+
+set.seed(76471)
+
+# perform train/test split
+train_test_split_inds <- caret::createDataPartition(prostrate$lpsa)
+
+prostrate_train <- prostrate %>% slice(train_test_split_inds[[1]])
+prostrate_test <- prostrate %>% slice(-train_test_split_inds[[1]])
+```
+
+\newpage
+
+#### Ordinary least squares
+
+```{r}
+# ordinary least squares
+lm_fit <- train(
+  form = lpsa ~ .,
+  data = prostrate_train,
+  method = "lm", # method for fit
+  trControl = trainControl(method = "none")
+)
+
+coef(lm_fit$finalModel)
+mean((prostrate_test$lpsa - predict(lm_fit, newdata = prostrate_test))^2)
+```
+
+\newpage
+
+#### LASSO
+
+We will ask the train function in the caret package to do cross-validation for us to select the penalty parameter $\lambda$.
+
+To do this, we specify:
+
+ * `trainControl(method = "CV")`
+ * `tuneGrid` is a data frame with values of parameters to tune.  In this case:
+    * `alpha = 1` says we want the LASSO penalty.
+    * `lambda` is a grid of possible values for the penalty $\lambda$ between 0 and 1.
+
+```{r}
+lasso_fit <- train(
+  form = lpsa ~ .,
+  data = prostrate_train,
+  method = "glmnet", # method for fit
+  trControl = trainControl(method = "cv"),
+  tuneGrid = data.frame(
+    alpha = 1,
+    lambda = seq(from = 0, to = 1, length = 100)
+  )
+)
+# results from cross-validation
+head(lasso_fit$results)
+lasso_fit$bestTune$lambda
+
+ggplot(data = lasso_fit$results, mapping = aes(x = lambda, y = RMSE)) +
+  geom_line() +
+  geom_vline(xintercept = lasso_fit$bestTune$lambda)
+
+
+# coefficient estimates with the selected value of lambda
+coef(lasso_fit$finalModel, lasso_fit$bestTune$lambda)
+
+# test set MSE
+mean((prostrate_test$lpsa - predict(lasso_fit, newdata = prostrate_test))^2)
+```
+
+\newpage
+
+#### Ridge Regression
+
+We will ask the train function in the caret package to do cross-validation for us.
+
+To do this, we specify:
+
+ * `trainControl(method = "CV")`
+ * `tuneGrid` is a data frame with values of parameters to tune.  In this case:
+    * `alpha = 0` says we want the ridge penalty.
+    * `lambda` is a grid of possible values for the penalty $\lambda$ between 0 and 1.
+
+```{r}
+ridge_fit <- train(
+  form = lpsa ~ .,
+  data = prostrate_train,
+  method = "glmnet", # method for fit
+  trControl = trainControl(method = "cv"),
+  tuneGrid = data.frame(
+    alpha = 0,
+    lambda = seq(from = 0, to = 1, length = 100)
+  )
+)
+# results from cross-validation
+head(ridge_fit$results)
+ridge_fit$bestTune$lambda
+
+ggplot(data = ridge_fit$results, mapping = aes(x = lambda, y = RMSE)) +
+  geom_line() +
+  geom_vline(xintercept = ridge_fit$bestTune$lambda)
+
+# coefficient estimates with the selected value of lambda
+coef(ridge_fit$finalModel, ridge_fit$bestTune$lambda)
+
+# test set MSE
+mean((prostrate_test$lpsa - predict(ridge_fit, newdata = prostrate_test))^2)
+```
+

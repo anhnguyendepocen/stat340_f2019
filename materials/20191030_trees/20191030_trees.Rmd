@@ -1,0 +1,273 @@
+---
+title: "Classification and Regression Trees (CART)"
+output:
+  pdf_document:
+    keep_tex: true
+geometry: margin=1.5cm
+header-includes:
+   - \usepackage{booktabs}
+   - \usepackage{multicol}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, warning=FALSE, message=FALSE, echo = FALSE}
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+library(GGally)
+library(purrr)
+library(caret)
+library(faraway)
+```
+
+## Regression Trees: Ozone data
+
+This example is adapted from the book "Extending the Linear Model with R", by Julian J. Faraway.  Here is a quote from that book describing the data:
+
+> We apply the regression tree methodology to study the relationship between atmospheric ozone concentration and meteorology in the Los Angeles Basin in 1976.  A number of cases with missing variables hve been removed for simplicity [but Evan notes that trees are among the regression and classification methods that are best able to handle missing data].  We wish to predict the ozone level from the other predictors.
+
+The variables in the data set are as follows:
+
+ * `O3`: Ozone concentration (ppm) at Sandbug Air Force Base
+ * `vh`: Vandenburg 500 millibar height (inches)
+ * `wind`: wind speed (miles per hour)
+ * `humidity`: humidity (percent)
+ * `temp`: temperature (degrees C)
+ * `ibh`: inversion base height (feet)
+ * `dpg`: Daggett pressure gradient (mmhg)
+ * `ibt`: inversion base temperature (degrees F)
+ * `vis`: visibility (miles)
+ * `doy`: day of the year
+
+```{r, fig.height= 2.5}
+head(ozone)
+dim(ozone)
+
+ggplot(data = ozone, mapping = aes(x = temp, y = O3)) +
+  geom_point()
+```
+
+\newpage
+
+## Regression tree with 1 explanatory variable:
+
+#### Fit the model
+
+```{r}
+tree_fit <- train(
+  form = O3 ~ temp,
+  data = ozone,
+  method = "rpart",
+  trControl = trainControl(method = "none"),
+  tuneGrid = data.frame(cp = 0.01)
+)
+```
+
+#### Display the estimated tree
+
+```{r, fig.height = 3.25}
+plot(tree_fit$finalModel, margin = 0.1)
+text(tree_fit$finalModel)
+```
+
+#### What's the predicted ozone level for a day with a temperature of 75 degrees?
+
+```{r}
+predict(tree_fit, newdata = data.frame(temp = 75))
+```
+
+#### A picture of predicted ozone level as a function of temperature:
+
+```{r, fig.height = 2.5}
+predict_tree <- function(x) {
+  predict(tree_fit, newdata = data.frame(temp = x))
+}
+
+ggplot(data = ozone, mapping = aes(x = temp, y = O3)) +
+  geom_point() +
+  stat_function(fun = predict_tree, n = 1001, color = "orange") +
+  geom_vline(xintercept = 67.5, color = "cornflowerblue") +
+  geom_vline(xintercept = c(58.5, 79.5), color = "purple")
+```
+
+\newpage
+
+## Effect of penalty parameter $\lambda$ on estimation
+
+ * In `rpart`, $\lambda$ is denoted by `cp`, for complexity parameter
+
+```{r, echo = FALSE}
+pred_plots <- lapply(
+  c(0, 0.001, 0.01, 0.1, 1),
+  function(cp) {
+    tree_fit <- train(
+      form = O3 ~ temp,
+      data = ozone,
+      method = "rpart",
+      trControl = trainControl(method = "none"),
+      tuneGrid = data.frame(cp = cp)
+    )
+    
+    predict_tree <- function(x) {
+      predict(tree_fit, newdata = data.frame(temp = x))
+    }
+    
+    p <- ggplot(data = ozone, mapping = aes(x = temp, y = O3)) +
+      geom_point() +
+      stat_function(fun = predict_tree, n = 1001, color = "orange") +
+      ggtitle(paste0("cp = ", cp))
+    
+    return(p)
+  }
+)
+
+grid.arrange(
+  pred_plots[[1]],
+  pred_plots[[2]],
+  pred_plots[[3]],
+  pred_plots[[4]],
+  pred_plots[[5]]
+)
+```
+
+\newpage
+
+## Regression tree with 2 explanatory variables:
+
+```{r}
+tree_fit <- train(
+  form = O3 ~ temp + ibh,
+  data = ozone,
+  method = "rpart",
+  trControl = trainControl(method = "none"),
+  tuneGrid = data.frame(cp = 0.01)
+)
+```
+
+```{r, fig.height = 3.5}
+plot(tree_fit$finalModel, margin = 0.1, uniform = TRUE)
+text(tree_fit$finalModel)
+```
+
+What's the predicted ozone level for a day with a temperature of 75 degrees and an inversion base height of 2000 feet?
+
+```{r}
+test_data <- data.frame(
+  temp = 75, ibh = 2000
+)
+
+predict(tree_fit, newdata = test_data)
+```
+
+```{r, fig.height=4, fig.width = 6, echo = FALSE, cache = TRUE}
+xgrid <- expand.grid(
+  temp = seq(from = 0, to = 100, length = 501),
+  ibh = seq(from = 0, to = 5500, length = 501)
+)
+
+xgrid <- xgrid %>%
+  mutate(
+    O3 = predict(tree_fit, newdata = xgrid)
+  )
+
+ggplot() +
+  geom_raster(data = xgrid, mapping = aes(x = temp, y = ibh, fill = O3), alpha = 0.3) +
+  geom_point(data = ozone, mapping = aes(x = temp, y = ibh, color = O3)) +
+  geom_line(data = data.frame(temp = c(67.5, 67.5), ibh = c(0, 5500)),
+    mapping = aes(x = temp, y = ibh)) +
+  geom_line(data = data.frame(temp = c(0, 67.5), ibh = c(3574, 3574)),
+    mapping = aes(x = temp, y = ibh)) +
+  geom_line(data = data.frame(temp = c(58.5, 58.5), ibh = c(0, 3574)),
+    mapping = aes(x = temp, y = ibh)) +
+  geom_line(data = data.frame(temp = c(79.5, 79.5), ibh = c(0, 5500)),
+    mapping = aes(x = temp, y = ibh)) +
+  geom_line(data = data.frame(temp = c(67.5, 79.5), ibh = c(2785, 2785)),
+    mapping = aes(x = temp, y = ibh)) +
+  scale_color_gradient2(breaks = c(10, 20, 30), midpoint = 17.5) +
+  scale_fill_gradient2(breaks = c(10, 20, 30), midpoint = 17.5) +
+  xlim(c(0, 100)) +
+  ylim(c(0, 5500))
+```
+
+Note that the above is *not* a plot of decision boundaries for classification since this is a regression problem!  The predictions are for a quantitative response.
+
+\newpage
+
+## More covariates:
+
+```{r, fig.height = 3.5}
+tree_fit <- train(
+  form = O3 ~ .,
+  data = ozone,
+  method = "rpart",
+  trControl = trainControl(method = "none"),
+  tuneGrid = data.frame(cp = 0.01)
+)
+
+# print picture of resulting tree
+plot(tree_fit$finalModel, margin = 0.1, uniform = TRUE)
+text(tree_fit$finalModel)
+```
+
+\newpage
+
+## Classification Trees: Heart Disease data
+
+We have data on 303 patients who presented with chest pain.  The response variable is `AHD`, which is is "Yes" if an angiogrphic test indicates presence of heart disease, and "No" otherwise.  There are 13 predictor variables which are a mix of quantitative and categorical variables.
+
+```{r, message = FALSE, echo = FALSE}
+library(readr)
+heart <- read_csv("http://www.evanlray.com/data/islr/Heart.csv") %>%
+  select(-X1) %>% # drop leading column of row numbers
+  mutate_at(c("Sex", "ChestPain", "Fbs", "RestECG", "ExAng", "Slope", "Thal", "AHD"), factor) %>%
+  filter(!is.na(Ca), !is.na(Thal))
+```
+
+```{r}
+head(heart)
+```
+
+```{r, fig.height=3.33}
+tree_fit <- train(
+  form = AHD ~ .,
+  data = heart,
+  method = "rpart",
+  trControl = trainControl(method = "none"),
+  tuneGrid = data.frame(cp = 0.01)
+)
+
+# print second picture of resulting tree
+plot(tree_fit$finalModel, margin = 0.1, uniform = TRUE)
+text(tree_fit$finalModel)
+
+levels(heart$Thal)
+levels(heart$ChestPain)
+```
+
+What's the predicted class for someone with the following covariate values?
+
+```{r, echo = FALSE}
+person_to_classify <- data.frame(
+  Age = 55,
+  Sex = "1",
+  ChestPain = "typical",
+  RestBP = 140,
+  Chol = 250,
+  Fbs = "1",
+  RestECG ="1",
+  MaxHR = 160,
+  ExAng = "1",
+  Oldpeak = 2.2,
+  Slope = "3",
+  Ca = 2,
+  Thal = "normal"
+)
+person_to_classify
+```
+
+```{r}
+predict(tree_fit, newdata = person_to_classify)
+```

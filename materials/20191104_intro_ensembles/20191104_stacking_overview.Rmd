@@ -1,0 +1,12 @@
+---
+title: "Stacking Schematic"
+output:
+  pdf_document:
+    keep_tex: true
+geometry: margin=1cm
+header-includes:
+   - \usepackage{booktabs}
+   - \usepackage{multicol}
+---
+
+\includegraphics[height=9.5in]{stacking.pdf}

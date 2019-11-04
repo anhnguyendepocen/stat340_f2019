@@ -1,0 +1,267 @@
+---
+title: "Stacking for Regression"
+output:
+  pdf_document:
+    keep_tex: true
+geometry: margin=1.5cm
+header-includes:
+   - \usepackage{booktabs}
+   - \usepackage{multicol}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Example: Boston Housing Prices
+
+Predicting the median value of owner-occupied homes in neighborhoods around Boston, based on recorded characteristics of those neighborhoods.
+
+```{r, message = FALSE}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+library(purrr)
+library(glmnet)
+library(caret)
+
+# read in data
+Boston <- read_csv("http://www.evanlray.com/data/mass/Boston.csv")
+
+# Initial train/test split ("estimation"/test) and cross-validation folds
+set.seed(63770)
+tt_inds <- caret::createDataPartition(Boston$medv, p = 0.8)
+train_set <- Boston %>% slice(tt_inds[[1]])
+test_set <- Boston %>% slice(-tt_inds[[1]])
+
+crossval_val_fold_inds <- caret::createFolds(
+  y = train_set$medv, # response variable as a vector
+  k = 10 # number of folds for cross-validation
+)
+
+get_complementary_inds <- function(x) {
+  return(seq_len(nrow(train_set))[-x])
+}
+crossval_train_fold_inds <- map(crossval_val_fold_inds, get_complementary_inds)
+```
+
+## Individual Methods
+
+#### Linear Regression
+
+```{r, warning=FALSE}
+lm_fit <- train(
+  form = medv ~ .,
+  data = train_set,
+  method = "lm", # method for fit
+  trControl = trainControl(method = "cv", # evaluate method performance via cross-validation
+    number = 10, # number of folds for cross-validation
+    index = crossval_train_fold_inds, # I'm specifying which folds to use, for consistency across methods
+    indexOut = crossval_val_fold_inds, # I'm specifying which folds to use, for consistency across methods
+    returnResamp = "all", # return information from cross-validation
+    savePredictions = TRUE) # return validation set predictions from cross-validation
+)
+
+lm_fit$results
+```
+
+\newpage
+
+#### KNN
+
+```{r}
+knn_fit <- train(
+  form = medv ~ .,
+  data = train_set,
+  method = "knn",
+  preProcess = "scale",
+  trControl = trainControl(method = "cv",
+    number = 10,
+    index = crossval_train_fold_inds, # I'm specifying which folds to use, for consistency across methods
+    indexOut = crossval_val_fold_inds, # I'm specifying which folds to use, for consistency across methods
+    returnResamp = "all",
+    savePredictions = TRUE),
+  tuneGrid = data.frame(k = 1:20)
+)
+
+knn_fit$results
+```
+
+\newpage
+
+#### Trees
+
+```{r}
+rpart_fit <- train(
+  form = medv ~ .,
+  data = train_set,
+  method = "rpart",
+  trControl = trainControl(method = "cv",
+    number = 10,
+    index = crossval_train_fold_inds, # I'm specifying which folds to use, for consistency across methods
+    indexOut = crossval_val_fold_inds, # I'm specifying which folds to use, for consistency across methods
+    returnResamp = "all",
+    savePredictions = TRUE),
+  tuneGrid = data.frame(cp = seq(from = 0, to = 1, length = 20))
+)
+
+rpart_fit$results
+```
+
+#### Test set predictions from each of the 3 methods above:
+
+```{r}
+lm_preds <- predict(lm_fit, newdata = test_set)
+sqrt(mean((test_set$medv - lm_preds)^2))
+
+knn_preds <- predict(knn_fit, newdata = test_set)
+sqrt(mean((test_set$medv - knn_preds)^2))
+
+rpart_preds <- predict(rpart_fit, newdata = test_set)
+sqrt(mean((test_set$medv - rpart_preds)^2))
+```
+
+\newpage
+
+## Ensemble Methods
+
+### Mean of Predictions from Stage 1 Methods
+
+```{r}
+lm_preds <- predict(lm_fit, newdata = test_set)
+knn_preds <- predict(knn_fit, newdata = test_set)
+rpart_preds <- predict(rpart_fit, newdata = test_set)
+
+mean_pred <- (lm_preds + knn_preds + rpart_preds) / 3
+
+sqrt(mean((test_set$medv - mean_pred)^2))
+```
+
+### Stacking: Fit a model to combine predictions from component models
+
+**Process:**
+
+Estimation: 
+
+1. Get cross-validated predictions for each "stage 1" or "component" model
+2. Create a new data set where the explanatory variables are the cross-validated predictions from the component models
+3. Fit a "stage 2" model to predict the response based on the component model predictions
+
+Prediction for test set:
+
+4. For each component model, re-fit to the full training data set and make predictions for the test set
+5. Create a new data set where the explanatory variables are the test set predictions from the component models
+6. Predict using the stage 2 model fit from step 3 and the data frame created in step 5.
+
+\newpage
+
+### Stacking via Linear Model, no intercept
+
+```{r, warning=FALSE}
+# Step 1: Validation-fold predictions from component models
+lm_val_pred <- lm_fit$pred %>%
+  arrange(rowIndex) %>%
+  pull(pred)
+
+knn_val_pred <- knn_fit$pred %>%
+  filter(k == knn_fit$bestTune$k) %>%
+  arrange(rowIndex) %>%
+  pull(pred)
+
+rpart_val_pred <- rpart_fit$pred %>%
+  filter(cp == rpart_fit$bestTune$cp) %>%
+  arrange(rowIndex) %>%
+  pull(pred)
+
+# Step 2: data set with validation-set component model predictions as explanatory variables
+train_set <- train_set %>%
+  mutate(
+    lm_pred = lm_val_pred,
+    knn_pred = knn_val_pred,
+    rpart_pred = rpart_val_pred
+  )
+
+# Step 3: fit model using component model predictions as explanatory variables
+# Here, a linear model without intercept (via lm directly because caret::train
+# doesn't let you fit a model without intercept without more work).
+stacking_fit <- lm(medv ~ 0 + lm_pred + knn_pred + rpart_pred, data = train_set)
+coef(stacking_fit)
+
+# Step 4 (both cross-validation and refitting to the full training set were already done
+# as part of obtaining lm_fit, knn_fit, and rpart_fit above)
+lm_test_pred <- predict(lm_fit, newdata = test_set)
+knn_test_pred <- predict(knn_fit, newdata = test_set)
+rpart_test_pred <- predict(rpart_fit, newdata = test_set)
+
+# Step 5: Assemble data frame of test set predictions from each component model
+stacking_test_x <- data.frame(
+  lm_pred = lm_test_pred,
+  knn_pred = knn_test_pred,
+  rpart_pred = rpart_test_pred
+)
+
+# Step 6: Stacked model predictions
+stacking_preds <- predict(stacking_fit, stacking_test_x)
+
+# Calculate error rate
+sqrt(mean((test_set$medv - stacking_preds)^2))
+```
+
+\newpage
+
+### Stacking via Ridge Regression
+
+ * We could also use other methods for the second stage model.
+
+```{r, warning=FALSE}
+# Step 1: Validation-fold predictions from component models
+lm_val_pred <- lm_fit$pred %>%
+  arrange(rowIndex) %>%
+  pull(pred)
+
+knn_val_pred <- knn_fit$pred %>%
+  filter(k == knn_fit$bestTune$k) %>%
+  arrange(rowIndex) %>%
+  pull(pred)
+
+rpart_val_pred <- rpart_fit$pred %>%
+  filter(cp == rpart_fit$bestTune$cp) %>%
+  arrange(rowIndex) %>%
+  pull(pred)
+
+# Step 2: data set with validation-set component model predictions as explanatory variables
+train_set <- train_set %>%
+  mutate(
+    lm_pred = lm_val_pred,
+    knn_pred = knn_val_pred,
+    rpart_pred = rpart_val_pred
+  )
+
+# Step 3: fit model using component model predictions as explanatory variables
+stacking_fit <- train(
+  form = medv ~ lm_pred + knn_pred + rpart_pred,
+  data = train_set,
+  method = "glmnet", 
+  tuneLength = 10)
+coef(stacking_fit$finalModel, stacking_fit$bestTune$lambda) %>% t()
+
+# Step 4 (both cross-validation and refitting to the full training set were already done
+# as part of obtaining lm_fit, knn_fit, and rpart_fit above)
+lm_test_pred <- predict(lm_fit, newdata = test_set)
+knn_test_pred <- predict(knn_fit, newdata = test_set)
+rpart_test_pred <- predict(rpart_fit, newdata = test_set)
+
+# Step 5: Assemble data frame of test set predictions from each component model
+stacking_test_x <- data.frame(
+  lm_pred = lm_test_pred,
+  knn_pred = knn_test_pred,
+  rpart_pred = rpart_test_pred
+)
+
+# Step 6: Stacked model predictions
+stacking_preds <- predict(stacking_fit, stacking_test_x)
+
+# Calculate error rate
+sqrt(mean((test_set$medv - stacking_preds)^2))
+```

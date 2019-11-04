@@ -1,0 +1,647 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1.5cm]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Ensemble Methods for Classification},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\providecommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{Ensemble Methods for Classification}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+  \subtitle{Majority Vote and Stacking}
+  \author{}
+    \preauthor{}\postauthor{}
+    \date{}
+    \predate{}\postdate{}
+  
+\usepackage{booktabs}
+\usepackage{multicol}
+
+\begin{document}
+\maketitle
+
+\hypertarget{ensembles-example-ionosphere-radar-data}{%
+\subsection{Ensembles Example: Ionosphere radar
+data}\label{ensembles-example-ionosphere-radar-data}}
+
+This example is adapted from a discussion at
+\url{https://burakhimmetoglu.com/2016/12/01/stacking-models-for-improved-predictions/}
+
+Our data set for today is published and described at
+\url{https://archive.ics.uci.edu/ml/datasets/ionosphere}:
+
+\begin{quote}
+This radar data was collected by a system in Goose Bay, Labrador. This
+system consists of a phased array of 16 high-frequency antennas with a
+total transmitted power on the order of 6.4 kilowatts. See the paper for
+more details. The targets were free electrons in the ionosphere.
+``Good'' radar returns are those showing evidence of some type of
+structure in the ionosphere. ``Bad'' returns are those that do not;
+their signals pass through the ionosphere.
+
+Received signals were processed using an autocorrelation function whose
+arguments are the time of a pulse and the pulse number. There were 17
+pulse numbers for the Goose Bay system. Instances in this databse are
+described by 2 attributes per pulse number, corresponding to the complex
+values returned by the function resulting from the complex
+electromagnetic signal.
+
+Attribute Information:
+
+\begin{itemize}
+\tightlist
+\item
+  All 34 are continuous
+\item
+  The 35th attribute is either ``good'' or ``bad'' according to the
+  definition summarized above. This is a binary classification task.
+\end{itemize}
+\end{quote}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(readr)}
+\KeywordTok{library}\NormalTok{(dplyr)}
+\KeywordTok{library}\NormalTok{(ggplot2)}
+\KeywordTok{library}\NormalTok{(gridExtra)}
+\KeywordTok{library}\NormalTok{(purrr)}
+\KeywordTok{library}\NormalTok{(glmnet)}
+\KeywordTok{library}\NormalTok{(caret)}
+
+\CommentTok{# read in data}
+\NormalTok{ionosphere <-}\StringTok{ }\KeywordTok{read_csv}\NormalTok{(}\StringTok{"http://www.evanlray.com/data/UCIML/ionosphere/ionosphere.data"}\NormalTok{, }\DataTypeTok{col_names =} \OtherTok{FALSE}\NormalTok{)}
+
+\CommentTok{# X2 was all 0's}
+\NormalTok{ionosphere <-}\StringTok{ }\NormalTok{ionosphere }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\NormalTok{X2)}
+
+\CommentTok{# Convert prediction target to a factor}
+\NormalTok{ionosphere}\OperatorTok{$}\NormalTok{X35 <-}\StringTok{ }\KeywordTok{factor}\NormalTok{(ionosphere}\OperatorTok{$}\NormalTok{X35)}
+
+
+\CommentTok{## Initial train/test split ("estimation"/test) and cross-validation folds}
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{63770}\NormalTok{)}
+\NormalTok{tt_inds <-}\StringTok{ }\NormalTok{caret}\OperatorTok{::}\KeywordTok{createDataPartition}\NormalTok{(ionosphere}\OperatorTok{$}\NormalTok{X35, }\DataTypeTok{p =} \FloatTok{0.8}\NormalTok{)}
+\NormalTok{ionosphere_train <-}\StringTok{ }\NormalTok{ionosphere }\OperatorTok{%>%}\StringTok{ }\KeywordTok{slice}\NormalTok{(tt_inds[[}\DecValTok{1}\NormalTok{]])}
+\NormalTok{ionosphere_test <-}\StringTok{ }\NormalTok{ionosphere }\OperatorTok{%>%}\StringTok{ }\KeywordTok{slice}\NormalTok{(}\OperatorTok{-}\NormalTok{tt_inds[[}\DecValTok{1}\NormalTok{]])}
+
+\NormalTok{crossval_val_fold_inds <-}\StringTok{ }\NormalTok{caret}\OperatorTok{::}\KeywordTok{createFolds}\NormalTok{(}
+  \DataTypeTok{y =}\NormalTok{ ionosphere_train}\OperatorTok{$}\NormalTok{X35, }\CommentTok{# response variable as a vector}
+  \DataTypeTok{k =} \DecValTok{10} \CommentTok{# number of folds for cross-validation}
+\NormalTok{)}
+
+\NormalTok{get_complementary_inds <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(x) \{}
+  \KeywordTok{return}\NormalTok{(}\KeywordTok{seq_len}\NormalTok{(}\KeywordTok{nrow}\NormalTok{(ionosphere_train))[}\OperatorTok{-}\NormalTok{x])}
+\NormalTok{\}}
+\NormalTok{crossval_train_fold_inds <-}\StringTok{ }\KeywordTok{map}\NormalTok{(crossval_val_fold_inds, get_complementary_inds)}
+\end{Highlighting}
+\end{Shaded}
+
+\newpage
+
+\hypertarget{individual-methods}{%
+\subsubsection{Individual Methods}\label{individual-methods}}
+
+\hypertarget{logistic-regression}{%
+\paragraph{Logistic Regression}\label{logistic-regression}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{logistic_fit <-}\StringTok{ }\KeywordTok{train}\NormalTok{(}
+  \DataTypeTok{form =}\NormalTok{ X35 }\OperatorTok{~}\StringTok{ }\NormalTok{.,}
+  \DataTypeTok{data =}\NormalTok{ ionosphere_train,}
+  \DataTypeTok{family =} \StringTok{"binomial"}\NormalTok{, }\CommentTok{# this is an argument to glm}
+  \DataTypeTok{method =} \StringTok{"glm"}\NormalTok{, }\CommentTok{# method for fit}
+  \DataTypeTok{trControl =} \KeywordTok{trainControl}\NormalTok{(}\DataTypeTok{method =} \StringTok{"cv"}\NormalTok{, }\CommentTok{# evaluate method performance via cross-validation}
+    \DataTypeTok{number =} \DecValTok{10}\NormalTok{, }\CommentTok{# number of folds for cross-validation}
+    \DataTypeTok{index =}\NormalTok{ crossval_train_fold_inds, }\CommentTok{# I'm specifying which folds to use, for consistency across methods}
+    \DataTypeTok{indexOut =}\NormalTok{ crossval_val_fold_inds, }\CommentTok{# I'm specifying which folds to use, for consistency across methods}
+    \DataTypeTok{returnResamp =} \StringTok{"all"}\NormalTok{, }\CommentTok{# return information from cross-validation}
+    \DataTypeTok{savePredictions =} \OtherTok{TRUE}\NormalTok{, }\CommentTok{# return validation set predictions from cross-validation}
+    \DataTypeTok{classProbs =} \OtherTok{TRUE}\NormalTok{) }\CommentTok{# return validation set predicted class probabilities from cross-validation}
+\NormalTok{)}
+
+\NormalTok{logistic_fit}\OperatorTok{$}\NormalTok{results}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   parameter  Accuracy     Kappa AccuracySD   KappaSD
+## 1      none 0.8504926 0.6652007 0.07110272 0.1659337
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{head}\NormalTok{(logistic_fit}\OperatorTok{$}\NormalTok{pred)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   pred obs            b            g rowIndex parameter Resample
+## 1    g   g 2.052430e-01 7.947570e-01        1      none   Fold01
+## 2    g   g 2.576157e-02 9.742384e-01       10      none   Fold01
+## 3    g   b 3.994962e-06 9.999960e-01       13      none   Fold01
+## 4    g   g 3.042912e-04 9.996957e-01       16      none   Fold01
+## 5    g   g 1.427377e-03 9.985726e-01       17      none   Fold01
+## 6    b   b 1.000000e+00 1.735932e-11       38      none   Fold01
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{logistic_fit}\OperatorTok{$}\NormalTok{pred }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(Resample) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{accuracy =} \KeywordTok{mean}\NormalTok{(pred }\OperatorTok{==}\StringTok{ }\NormalTok{obs)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{accuracy =} \KeywordTok{mean}\NormalTok{(accuracy))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   accuracy
+##      <dbl>
+## 1    0.850
+\end{verbatim}
+
+\newpage
+
+\hypertarget{knn}{%
+\paragraph{KNN}\label{knn}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{knn_fit <-}\StringTok{ }\KeywordTok{train}\NormalTok{(}
+  \DataTypeTok{form =}\NormalTok{ X35 }\OperatorTok{~}\StringTok{ }\NormalTok{.,}
+  \DataTypeTok{data =}\NormalTok{ ionosphere_train,}
+  \DataTypeTok{method =} \StringTok{"knn"}\NormalTok{,}
+  \DataTypeTok{preProcess =} \StringTok{"scale"}\NormalTok{,}
+  \DataTypeTok{trControl =} \KeywordTok{trainControl}\NormalTok{(}\DataTypeTok{method =} \StringTok{"cv"}\NormalTok{,}
+    \DataTypeTok{number =} \DecValTok{10}\NormalTok{,}
+    \DataTypeTok{index =}\NormalTok{ crossval_train_fold_inds, }\CommentTok{# I'm specifying which folds to use, for consistency across methods}
+    \DataTypeTok{indexOut =}\NormalTok{ crossval_val_fold_inds, }\CommentTok{# I'm specifying which folds to use, for consistency across methods}
+    \DataTypeTok{returnResamp =} \StringTok{"all"}\NormalTok{,}
+    \DataTypeTok{savePredictions =} \OtherTok{TRUE}\NormalTok{,}
+    \DataTypeTok{classProbs =} \OtherTok{TRUE}\NormalTok{),}
+  \DataTypeTok{tuneGrid =} \KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{k =} \DecValTok{1}\OperatorTok{:}\DecValTok{20}\NormalTok{)}
+\NormalTok{)}
+
+\NormalTok{knn_fit}\OperatorTok{$}\NormalTok{results}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##     k  Accuracy     Kappa AccuracySD   KappaSD
+## 1   1 0.8540640 0.6570214 0.08983538 0.2252713
+## 2   2 0.8362069 0.6136325 0.07200427 0.1706708
+## 3   3 0.8147783 0.5538864 0.09519951 0.2273648
+## 4   4 0.8041872 0.5226215 0.09867257 0.2402436
+## 5   5 0.8219212 0.5680881 0.09692917 0.2403482
+## 6   6 0.8254926 0.5792690 0.08680310 0.2128852
+## 7   7 0.8040640 0.5219281 0.06620901 0.1715432
+## 8   8 0.8076355 0.5324729 0.06163325 0.1578542
+## 9   9 0.8041872 0.5237628 0.05671862 0.1452014
+## 10 10 0.8075123 0.5300637 0.06400532 0.1680257
+## 11 11 0.7932266 0.4880301 0.05349060 0.1460922
+## 12 12 0.7896552 0.4784264 0.04981489 0.1364785
+## 13 13 0.8003695 0.5071866 0.05702811 0.1567114
+## 14 14 0.8003695 0.5082105 0.05182000 0.1414887
+## 15 15 0.7896552 0.4785748 0.06466996 0.1707640
+## 16 16 0.7754926 0.4389018 0.05922736 0.1593515
+## 17 17 0.7754926 0.4383273 0.06157375 0.1677752
+## 18 18 0.7684729 0.4133543 0.07438714 0.2072648
+## 19 19 0.7647783 0.4022990 0.07254520 0.2019538
+## 20 20 0.7472906 0.3506893 0.04908562 0.1432625
+\end{verbatim}
+
+\newpage
+
+\hypertarget{trees}{%
+\paragraph{Trees}\label{trees}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rpart_fit <-}\StringTok{ }\KeywordTok{train}\NormalTok{(}
+  \DataTypeTok{form =}\NormalTok{ X35 }\OperatorTok{~}\StringTok{ }\NormalTok{.,}
+  \DataTypeTok{data =}\NormalTok{ ionosphere_train,}
+  \DataTypeTok{method =} \StringTok{"rpart"}\NormalTok{,}
+  \DataTypeTok{trControl =} \KeywordTok{trainControl}\NormalTok{(}\DataTypeTok{method =} \StringTok{"cv"}\NormalTok{,}
+    \DataTypeTok{number =} \DecValTok{10}\NormalTok{,}
+    \DataTypeTok{index =}\NormalTok{ crossval_train_fold_inds, }\CommentTok{# I'm specifying which folds to use, for consistency across methods}
+    \DataTypeTok{indexOut =}\NormalTok{ crossval_val_fold_inds, }\CommentTok{# I'm specifying which folds to use, for consistency across methods}
+    \DataTypeTok{returnResamp =} \StringTok{"all"}\NormalTok{,}
+    \DataTypeTok{savePredictions =} \OtherTok{TRUE}\NormalTok{,}
+    \DataTypeTok{classProbs =} \OtherTok{TRUE}\NormalTok{),}
+  \DataTypeTok{tuneGrid =} \KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{cp =} \KeywordTok{seq}\NormalTok{(}\DataTypeTok{from =} \DecValTok{0}\NormalTok{, }\DataTypeTok{to =} \DecValTok{1}\NormalTok{, }\DataTypeTok{length =} \DecValTok{20}\NormalTok{))}
+\NormalTok{)}
+
+\NormalTok{rpart_fit}\OperatorTok{$}\NormalTok{results}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##            cp  Accuracy      Kappa  AccuracySD    KappaSD
+## 1  0.00000000 0.8543103 0.67345204 0.058505963 0.13243804
+## 2  0.05263158 0.8828818 0.74337870 0.057119643 0.12038235
+## 3  0.10526316 0.8828818 0.74337870 0.057119643 0.12038235
+## 4  0.15789474 0.8828818 0.74337870 0.057119643 0.12038235
+## 5  0.21052632 0.8364532 0.61862568 0.069272228 0.19298353
+## 6  0.26315789 0.7795567 0.46022616 0.045605318 0.11811999
+## 7  0.31578947 0.7795567 0.46022616 0.045605318 0.11811999
+## 8  0.36842105 0.7795567 0.46022616 0.045605318 0.11811999
+## 9  0.42105263 0.7795567 0.46022616 0.045605318 0.11811999
+## 10 0.47368421 0.7795567 0.46022616 0.045605318 0.11811999
+## 11 0.52631579 0.6477833 0.02432432 0.024382992 0.07692027
+## 12 0.57894737 0.6406404 0.00000000 0.007009975 0.00000000
+## 13 0.63157895 0.6406404 0.00000000 0.007009975 0.00000000
+## 14 0.68421053 0.6406404 0.00000000 0.007009975 0.00000000
+## 15 0.73684211 0.6406404 0.00000000 0.007009975 0.00000000
+## 16 0.78947368 0.6406404 0.00000000 0.007009975 0.00000000
+## 17 0.84210526 0.6406404 0.00000000 0.007009975 0.00000000
+## 18 0.89473684 0.6406404 0.00000000 0.007009975 0.00000000
+## 19 0.94736842 0.6406404 0.00000000 0.007009975 0.00000000
+## 20 1.00000000 0.6406404 0.00000000 0.007009975 0.00000000
+\end{verbatim}
+
+\hypertarget{test-set-predictions-from-each-of-the-3-methods-above}{%
+\paragraph{Test set predictions from each of the 3 methods
+above:}\label{test-set-predictions-from-each-of-the-3-methods-above}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{logistic_preds <-}\StringTok{ }\KeywordTok{predict}\NormalTok{(logistic_fit, }\DataTypeTok{newdata =}\NormalTok{ ionosphere_test)}
+\KeywordTok{mean}\NormalTok{(ionosphere_test}\OperatorTok{$}\NormalTok{X35 }\OperatorTok{!=}\StringTok{ }\NormalTok{logistic_preds)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.07142857
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{knn_preds <-}\StringTok{ }\KeywordTok{predict}\NormalTok{(knn_fit, }\DataTypeTok{newdata =}\NormalTok{ ionosphere_test)}
+\KeywordTok{mean}\NormalTok{(ionosphere_test}\OperatorTok{$}\NormalTok{X35 }\OperatorTok{!=}\StringTok{ }\NormalTok{knn_preds)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.08571429
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rpart_preds <-}\StringTok{ }\KeywordTok{predict}\NormalTok{(rpart_fit, }\DataTypeTok{newdata =}\NormalTok{ ionosphere_test)}
+\KeywordTok{mean}\NormalTok{(ionosphere_test}\OperatorTok{$}\NormalTok{X35 }\OperatorTok{!=}\StringTok{ }\NormalTok{rpart_preds)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.05714286
+\end{verbatim}
+
+\newpage
+
+\hypertarget{ensemble-methods}{%
+\subsubsection{Ensemble Methods}\label{ensemble-methods}}
+
+\hypertarget{majority-vote}{%
+\paragraph{Majority Vote}\label{majority-vote}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{majority_vote_preds <-}\StringTok{ }\KeywordTok{ifelse}\NormalTok{(}
+\NormalTok{  (logistic_preds }\OperatorTok{==}\StringTok{ "g"}\NormalTok{) }\OperatorTok{+}\StringTok{ }\NormalTok{(knn_preds }\OperatorTok{==}\StringTok{ "g"}\NormalTok{) }\OperatorTok{+}\StringTok{ }\NormalTok{(rpart_preds }\OperatorTok{==}\StringTok{ "g"}\NormalTok{) }\OperatorTok{>=}\StringTok{ }\DecValTok{2}\NormalTok{,}
+  \StringTok{"g"}\NormalTok{,}
+  \StringTok{"b"}
+\NormalTok{)}
+
+\KeywordTok{mean}\NormalTok{(ionosphere_test}\OperatorTok{$}\NormalTok{X35 }\OperatorTok{!=}\StringTok{ }\NormalTok{majority_vote_preds)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.02857143
+\end{verbatim}
+
+\hypertarget{mean-of-class-probabilities-from-individual-methods}{%
+\paragraph{Mean of Class Probabilities from Individual
+Methods}\label{mean-of-class-probabilities-from-individual-methods}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{logistic_class_probs <-}\StringTok{ }\KeywordTok{predict}\NormalTok{(logistic_fit, }\DataTypeTok{newdata =}\NormalTok{ ionosphere_test, }\DataTypeTok{type =} \StringTok{"prob"}\NormalTok{)}
+\NormalTok{logistic_prob_g <-}\StringTok{ }\NormalTok{logistic_class_probs[, }\DecValTok{2}\NormalTok{]}
+
+\NormalTok{knn_class_probs <-}\StringTok{ }\KeywordTok{predict}\NormalTok{(knn_fit, }\DataTypeTok{newdata =}\NormalTok{ ionosphere_test, }\DataTypeTok{type =} \StringTok{"prob"}\NormalTok{)}
+\NormalTok{knn_prob_g <-}\StringTok{ }\NormalTok{knn_class_probs[, }\DecValTok{2}\NormalTok{]}
+
+\NormalTok{rpart_class_probs <-}\StringTok{ }\KeywordTok{predict}\NormalTok{(rpart_fit, }\DataTypeTok{newdata =}\NormalTok{ ionosphere_test, }\DataTypeTok{type =} \StringTok{"prob"}\NormalTok{)}
+\NormalTok{rpart_prob_g <-}\StringTok{ }\NormalTok{rpart_class_probs[, }\DecValTok{2}\NormalTok{]}
+
+\NormalTok{mean_prob_g <-}\StringTok{ }\NormalTok{(logistic_prob_g }\OperatorTok{+}\StringTok{ }\NormalTok{knn_prob_g }\OperatorTok{+}\StringTok{ }\NormalTok{rpart_prob_g) }\OperatorTok{/}\StringTok{ }\DecValTok{3}
+\NormalTok{mean_prob_preds <-}\StringTok{ }\KeywordTok{ifelse}\NormalTok{(}
+\NormalTok{  mean_prob_g }\OperatorTok{>=}\StringTok{ }\FloatTok{0.5}\NormalTok{,}
+  \StringTok{"g"}\NormalTok{,}
+  \StringTok{"b"}
+\NormalTok{)}
+\KeywordTok{mean}\NormalTok{(ionosphere_test}\OperatorTok{$}\NormalTok{X35 }\OperatorTok{!=}\StringTok{ }\NormalTok{mean_prob_preds)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.04285714
+\end{verbatim}
+
+\newpage
+
+\hypertarget{stacking-fit-a-model-to-combine-predicted-class-membership-probabilities}{%
+\paragraph{Stacking: Fit a model to combine predicted class membership
+probabilities}\label{stacking-fit-a-model-to-combine-predicted-class-membership-probabilities}}
+
+\textbf{Process:}
+
+Estimation:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Get cross-validated predictions for each ``stage 1'' or ``component''
+  model (this was done above)
+\item
+  Create a new data set where the explanatory variables are the
+  cross-validated predictions from the component models
+\item
+  Fit a ``stage 2'' model to predict the response based on the component
+  model predictions
+\end{enumerate}
+
+Prediction for test set:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{3}
+\tightlist
+\item
+  Re-fit each component model to the full training data set, make
+  predictions for the test set from each component model (this was done
+  above)
+\item
+  Create a new data set where the explanatory variables are the test set
+  predictions from the component models
+\item
+  Predict using the stage 2 model fit from step 3 and the data frame
+  created in step 5.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Step 2: data set with component model predictions as explanatory variables}
+\NormalTok{ionosphere_train <-}\StringTok{ }\NormalTok{ionosphere_train }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}
+    \DataTypeTok{logistic_prob_g =}\NormalTok{ logistic_fit}\OperatorTok{$}\NormalTok{pred }\OperatorTok{%>%}
+\StringTok{      }\KeywordTok{arrange}\NormalTok{(rowIndex) }\OperatorTok{%>%}
+\StringTok{      }\KeywordTok{pull}\NormalTok{(g),}
+    \DataTypeTok{knn_prob_g =}\NormalTok{ knn_fit}\OperatorTok{$}\NormalTok{pred }\OperatorTok{%>%}
+\StringTok{      }\KeywordTok{filter}\NormalTok{(k }\OperatorTok{==}\StringTok{ }\DecValTok{1}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{      }\KeywordTok{arrange}\NormalTok{(rowIndex) }\OperatorTok{%>%}
+\StringTok{      }\KeywordTok{pull}\NormalTok{(g),}
+    \DataTypeTok{rpart_prob_g =}\NormalTok{ rpart_fit}\OperatorTok{$}\NormalTok{pred }\OperatorTok{%>%}
+\StringTok{      }\KeywordTok{filter}\NormalTok{(cp }\OperatorTok{==}\StringTok{ }\NormalTok{rpart_fit}\OperatorTok{$}\NormalTok{bestTune}\OperatorTok{$}\NormalTok{cp) }\OperatorTok{%>%}
+\StringTok{      }\KeywordTok{arrange}\NormalTok{(rowIndex) }\OperatorTok{%>%}
+\StringTok{      }\KeywordTok{pull}\NormalTok{(g)}
+\NormalTok{  )}
+
+\CommentTok{# Step 3: fit model using component model predictions as explanatory variables}
+\NormalTok{stacking_logistic_fit <-}\StringTok{ }\KeywordTok{train}\NormalTok{(}
+  \DataTypeTok{form =}\NormalTok{ X35 }\OperatorTok{~}\StringTok{ }\NormalTok{logistic_prob_g }\OperatorTok{+}\StringTok{ }\NormalTok{knn_prob_g }\OperatorTok{+}\StringTok{ }\NormalTok{rpart_prob_g,}
+  \DataTypeTok{data =}\NormalTok{ ionosphere_train,}
+  \DataTypeTok{family =} \StringTok{"binomial"}\NormalTok{,}
+  \DataTypeTok{method =} \StringTok{"glm"}
+\NormalTok{)}
+
+\CommentTok{# Step 5: Assemble data frame of test set predictions from each component model}
+\NormalTok{stacking_test_x <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}
+  \DataTypeTok{logistic_prob_g =}\NormalTok{ logistic_prob_g,}
+  \DataTypeTok{knn_prob_g =}\NormalTok{ knn_prob_g,}
+  \DataTypeTok{rpart_prob_g =}\NormalTok{ rpart_prob_g}
+\NormalTok{)}
+
+\CommentTok{# Step 6: Stacked model predictions}
+\NormalTok{stacking_preds <-}\StringTok{ }\KeywordTok{predict}\NormalTok{(stacking_logistic_fit, stacking_test_x)}
+
+\CommentTok{# Calculate error rate}
+\KeywordTok{mean}\NormalTok{(ionosphere_test}\OperatorTok{$}\NormalTok{X35 }\OperatorTok{!=}\StringTok{ }\NormalTok{stacking_preds)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.01428571
+\end{verbatim}
+
+\newpage
+
+\hypertarget{stacking-via-knn}{%
+\paragraph{Stacking via KNN}\label{stacking-via-knn}}
+
+\begin{itemize}
+\tightlist
+\item
+  We could also use other methods for the second stage model.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ionosphere_train <-}\StringTok{ }\NormalTok{ionosphere_train }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}
+    \DataTypeTok{logistic_prob_g =}\NormalTok{ logistic_fit}\OperatorTok{$}\NormalTok{pred }\OperatorTok{%>%}
+\StringTok{      }\KeywordTok{arrange}\NormalTok{(rowIndex) }\OperatorTok{%>%}
+\StringTok{      }\KeywordTok{pull}\NormalTok{(g),}
+    \DataTypeTok{knn_prob_g =}\NormalTok{ knn_fit}\OperatorTok{$}\NormalTok{pred }\OperatorTok{%>%}
+\StringTok{      }\KeywordTok{filter}\NormalTok{(k }\OperatorTok{==}\StringTok{ }\DecValTok{1}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{      }\KeywordTok{arrange}\NormalTok{(rowIndex) }\OperatorTok{%>%}
+\StringTok{      }\KeywordTok{pull}\NormalTok{(g),}
+    \DataTypeTok{rpart_prob_g =}\NormalTok{ rpart_fit}\OperatorTok{$}\NormalTok{pred }\OperatorTok{%>%}
+\StringTok{      }\KeywordTok{filter}\NormalTok{(cp }\OperatorTok{==}\StringTok{ }\NormalTok{rpart_fit}\OperatorTok{$}\NormalTok{bestTune}\OperatorTok{$}\NormalTok{cp) }\OperatorTok{%>%}
+\StringTok{      }\KeywordTok{arrange}\NormalTok{(rowIndex) }\OperatorTok{%>%}
+\StringTok{      }\KeywordTok{pull}\NormalTok{(g)}
+\NormalTok{  )}
+
+\NormalTok{stacking_knn_fit <-}\StringTok{ }\KeywordTok{train}\NormalTok{(}
+  \DataTypeTok{form =}\NormalTok{ X35 }\OperatorTok{~}\StringTok{ }\NormalTok{logistic_prob_g }\OperatorTok{+}\StringTok{ }\NormalTok{knn_prob_g }\OperatorTok{+}\StringTok{ }\NormalTok{rpart_prob_g,}
+  \DataTypeTok{data =}\NormalTok{ ionosphere_train,}
+  \DataTypeTok{method =} \StringTok{"knn"}
+\NormalTok{)}
+
+\CommentTok{# Assemble data frame of test set predictions from each}
+\CommentTok{# component model (these were obtained in the previous part)}
+\NormalTok{stacking_test_x <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}
+  \DataTypeTok{logistic_prob_g =}\NormalTok{ logistic_prob_g,}
+  \DataTypeTok{knn_prob_g =}\NormalTok{ knn_prob_g,}
+  \DataTypeTok{rpart_prob_g =}\NormalTok{ rpart_prob_g}
+\NormalTok{)}
+
+\CommentTok{# Stacked model predictions}
+\NormalTok{stacking_preds <-}\StringTok{ }\KeywordTok{predict}\NormalTok{(stacking_knn_fit, stacking_test_x)}
+\KeywordTok{mean}\NormalTok{(ionosphere_test}\OperatorTok{$}\NormalTok{X35 }\OperatorTok{!=}\StringTok{ }\NormalTok{stacking_preds)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.01428571
+\end{verbatim}
+
+\hypertarget{notes-about-relative-performance-of-these-methods}{%
+\subsubsection{Notes about relative performance of these
+methods}\label{notes-about-relative-performance-of-these-methods}}
+
+\begin{itemize}
+\tightlist
+\item
+  The results with the seed I have set make the stacking approaches look
+  amazing - but in different runs I did as I was developing this,
+  relative performance of the ensemble approaches here varied.
+\item
+  In general, stacking is the best of these ensemble approaches in terms
+  of expected value of performance, if the methods' performance is not
+  all equal and we have enough training set data.
+\item
+  Note that in this example we had only 3 stage 1/component models. In
+  general, ensembles are most useful when we have:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    A large number of models that are
+    ``diverse''/uncorrelated/predictions are close to independent
+  \item
+    Enough training data available to reliably tell which component
+    models are best and how to combine their predictions effectively.
+  \end{itemize}
+\item
+  Formally, the stacking procedure I did here is not quite right:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    You shouldn't use the same cross-validation results both to select
+    tuning parameters like K for KNN and cp for classification trees,
+    AND as inputs to stacking.
+  \item
+    Doing this means models that overfit validation data will get too
+    much weight
+  \item
+    In practice if you're selecting one tuning parameter this shouldn't
+    matter too much.
+  \end{itemize}
+\end{itemize}
+
+
+\end{document}

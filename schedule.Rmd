@@ -237,7 +237,6 @@ make_week_box("week8", TRUE, "Week 8: Oct 21 -- Oct 25", "
     * Estimation for logistic regression: [pdf](materials/20191021_logistic_regression_estimation/20191021_logistic_reg_estimation.pdf)
  * **After class**, please:
 
-
 #### Wed, Oct 23
  * **In class**, we will work on:
     * Measures of classification skill: [pdf](materials/20191023_measures_of_error/20191023_measures_of_error.pdf)
@@ -260,17 +259,24 @@ make_week_box("week9", TRUE, "Week 9: Oct 28 -- Nov 01", "
 #### Mon, Oct 28
  * **In class**, we will work on:
     * Penalized estimation
+        * hand out: [pdf](materials/20191028_shrinkage/20191028_shrinkage.pdf)
+        * we also defined the LASSO regression estimator as minimizing RSS + $\\lambda \\sum_{j = 1}^p \\vert\\beta_j\\vert$, and ridge regression as minimizing RSS + $\\lambda \\sum_{j=1}^p \\beta_j^2$
  * **After class**, please:
     * Work on HW due Wed Oct 30
 
 #### Wed, Oct 30
  * **In class**, we will work on:
+    * Classification and regression trees
+        * lecture notes: [pdf](materials/20191030_trees/lecture_notes.pdf)
+        * hand out: [pdf](materials/20191030_trees/20191030_trees.pdf)
  * **After class**, please:
 
 
 #### Fri, Nov 01
  * **In class**, we will work on:
- * **After class**, please:
+    * Quiz
+    * Overview of where we've been and where we're going: [pdf](materials/20191030_trees/overview.pdf)
+ * **After class**, please
 ")
 ```
 
@@ -278,16 +284,26 @@ make_week_box("week9", TRUE, "Week 9: Oct 28 -- Nov 01", "
 make_week_box("week10", TRUE, "Week 10: Nov 04 -- Nov 08", "
 #### Mon, Nov 04
  * **In class**, we will work on:
+    * Start on ensembles and stacking:
+        * Lecture notes: [pdf](materials/20191104_intro_ensembles/lecture_notes.pdf)
+        * Stacking schematic: [pdf](materials/20191104_intro_ensembles/20191104_stacking_overview.pdf)
  * **After class**, please:
 
 
 #### Wed, Nov 06
  * **In class**, we will work on:
+    * Code for stacking:
+        * Classification example: [pdf](materials/20191104_intro_ensembles/20191104_stacking_ionosphere.pdf)
+        * Regression example: [pdf](materials/20191104_intro_ensembles/20191104_stacking_regression.pdf)
+    * Start lab on stacking
  * **After class**, please:
+    * Prepare for quiz on Friday
 
 
 #### Fri, Nov 08
  * **In class**, we will work on:
+    * Quiz on logistic regression
+    * Finish lab on stacking
  * **After class**, please:
 ")
 ```

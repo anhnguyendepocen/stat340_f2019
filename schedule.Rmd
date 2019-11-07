@@ -164,7 +164,7 @@ make_week_box("week4", FALSE, "Week 4: Sep 23 -- Sep 27", "
 make_week_box("week5", FALSE, "Week 5: Sep 30 -- Oct 04", "
 #### Mon, Sep 30
  * **In class**, we will work on:
-    * KNN for Regression: [pdf](materials/20190930_KNN/20180920_KNN.pdf) [Rmd](materials/20190930_KNN/20180930_KNN.Rmd)
+    * KNN for Regression: [pdf](materials/20190930_KNN/20180930_KNN.pdf) [Rmd](materials/20190930_KNN/20180930_KNN.Rmd)
  * **After class**, please:
 
 
@@ -295,15 +295,14 @@ make_week_box("week10", TRUE, "Week 10: Nov 04 -- Nov 08", "
     * Code for stacking:
         * Classification example: [pdf](materials/20191104_intro_ensembles/20191104_stacking_ionosphere.pdf)
         * Regression example: [pdf](materials/20191104_intro_ensembles/20191104_stacking_regression.pdf)
-    * Start lab on stacking
  * **After class**, please:
     * Prepare for quiz on Friday
 
 
 #### Fri, Nov 08
  * **In class**, we will work on:
-    * Quiz on logistic regression
-    * Finish lab on stacking
+    * Quiz on logistic regression and classification error
+    * Start on bagging, feature subsets, and random forests
  * **After class**, please:
 ")
 ```
@@ -312,6 +311,7 @@ make_week_box("week10", TRUE, "Week 10: Nov 04 -- Nov 08", "
 make_week_box("week11", TRUE, "Week 11: Nov 11 -- Nov 15", "
 #### Mon, Nov 11
  * **In class**, we will work on:
+    * Finish bagging, feature subsets, and random forests
  * **After class**, please:
 
 

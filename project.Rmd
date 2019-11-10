@@ -10,27 +10,24 @@ For the project you will create, in groups of 2 or 3, a thorough analysis of a p
  2. An appendix containing your exploratory or preliminary analyses.  This will include:
     a. a single R markdown file (that can be knitted) and
     b. the resulting knitted pdf file
-    
-    
-## Note: The remaining text below is from last year's project description.  I have left it here for your reference, but the details will likely change.  More to come in October or November.
 
 ### Deadlines
 
 This part of the page will be updated with more details and deadlines later.
 
-<!--
-* 5:00 PM Wed Oct 31: Fill out this google form indicating your preference for data set(s) to work with and/or your preference for group members: https://goo.gl/forms/EY1HLehwEURTrWpt2
-* 5:00 PM Fri Nov 9: First steps for the project (there are enough little things to do here that I want to see a small commit from every group member.  No one group member should do all the things!):
-    * Each team member should clone the repository to RStudio Server.
-    * Add your data file(s) to the repository (for the group working on dialects - I will do this for you by the evening of Monday, Nov 5).
-    * Create an R Markdown document that will have your preliminary/exploratory analyses in it, and write R code there to read in the data file to a data frame.
-    * Do a little initial exploration of the data set (a plot or two, examine whether there are missing values, start on any cleanup that needs to be done).
-    * Commit, push, and pull often.
-* 5:00 PM Fri Nov 30: working code implementing your methods
-* Fri Nov 30, Mon Dec 3, or Tues Dec 4: Draft slides done, let's meet to discuss them!  Book an appointment here: https://calendar.google.com/calendar/selfsched?sstoken=UUFsQ1lfNUJHOHNrfGRlZmF1bHR8NDcxZTFkMTIwNDEwZjI3MDhkZWI2ZTcyNDU5YzY5NzI
-* Dec. 5 and 7 (and Dec 10 if necessary): In-class presentations
-* End of finals period: final submission of write-up pushed to GitHub.
--->
+* **5:00 PM Tues Nov 12:** Group memberships.  [Fill out this google form](https://forms.gle/ZqiGzfCvztPPvFgKA) with your preference for group members: .  Groups should have 2 or 3 members.  Only one person per proposed group needs to do this.
+* **5:00 PM Sat Nov 16:** Project proposals and description of data sources.
+    * Each team member should clone the repository to RStudio Server or their local computer.
+    * Create an R Markdown document that will have your preliminary/exploratory analyses in it.
+    * Add 1 paragraph describing your data set and 1 paragraph outlining your proposed in-class and out-of-class methods.
+    * Submit by committing to your group's GitHub repository.  **I'd like to see a commit from at least 2 different group members.**  Commit, push, and pull often!
+* **5:00 PM Tue Nov 26:** First look at data:
+    * Add your data file(s) to the repository (for any groups working on dialects - I will do this for you by the evening of Saturday, Nov 16).
+    * Add code to your R markdown document to read the data in.
+    * Do a little initial exploration of the data set (exploratory plots, examine whether there are missing values, start on any cleanup that needs to be done).  **By this time, all three group members should have at least one commit.**  Commit, push, and pull often!
+* **5:00 PM Sat Dec 07:** At this check point, you should have implemented your in-class method and have working code for some variation on your out-of-class method.  Submit by committing to your group's GitHub repository.
+* **11:59 AM (noon) Tue Dec 17:** Final submission of R markdown file and pdf for report and supplementary materials.  Submit by uploading to google drive and sending me an email (cc'ing all group members) letting me know you have done that.
+* **11:59 AM (noon) Tue Dec 17:** Group dynamic report by email, **sent only to me**.
 
 ### Data Sets
 
@@ -64,6 +61,8 @@ Here's a description of this contest from Kaggle:
 > 
 > We also believe this dataset can help us understand trends in animal outcomes. These insights could help shelters focus their energy on specific animals who need a little extra help finding a new home.
 
+A fair amount of data cleaning and preprocessing would need to be done to work with this data set.
+
 #### Data Set Option 3: Superconductivity
 
 https://archive.ics.uci.edu/ml/datasets/Superconductivty+Data
@@ -80,21 +79,31 @@ Here's a quote from the original article linked above, Hamidieh, Kam, A data-dri
 >
 > In this study, we take an entirely data-driven approach to create a statistical model that predicts $T_c$ based on its chemical formula.
 
-#### Data Set Option 4: Restaurant Revenue Prediction
+#### Data Set Option 4: Bank Marketing
 
-https://www.kaggle.com/c/restaurant-revenue-prediction
+http://archive.ics.uci.edu/ml/datasets/Bank+Marketing
 
-Here's a description of this contest from Kaggle:
+Here's a description of this data set from the link above:
 
-> With over 1,200 quick service restaurants across the globe, TFI is the company behind some of the world's most well-known brands: Burger King, Sbarro, Popeyes, Usta Donerci, and Arby’s. They employ over 20,000 people in Europe and Asia and make significant daily investments in developing new restaurant sites.
->
-> Right now, deciding when and where to open new restaurants is largely a subjective process based on the personal judgement and experience of development teams. This subjective data is difficult to accurately extrapolate across geographies and cultures. 
-> 
-> New restaurant sites take large investments of time and capital to get up and running. When the wrong location for a restaurant brand is chosen, the site closes within 18 months and operating losses are incurred. 
-> 
-> Finding a mathematical model to increase the effectiveness of investments in new restaurant sites would allow TFI to invest more in other important business areas, like sustainability, innovation, and training for new employees. Using demographic, real estate, and commercial data, this competition challenges you to predict the annual restaurant sales of 100,000 regional locations.
+> The data is related with direct marketing campaigns of a Portuguese banking institution. The marketing campaigns were based on phone calls. Often, more than one contact to the same client was required, in order to access if the product (bank term deposit) would be ('yes') or not ('no') subscribed.
 
-#### Data Set Option 5: Your Proposal
+> The classification goal is to predict if the client will subscribe (yes/no) a term deposit (variable y).
+
+> Source: S. Moro, P. Cortez and P. Rita. A Data-Driven Approach to Predict the Success of Bank Telemarketing. Decision Support Systems, Elsevier, 62:22-31, June 2014
+
+#### Data Set Option 5: Bike share use
+
+https://archive.ics.uci.edu/ml/datasets/Bike+Sharing+Dataset
+
+Here's a description of this data set from the link above:
+
+> Bike sharing systems are new generation of traditional bike rentals where whole process from membership, rental and return back has become automatic. Through these systems, user is able to easily rent a bike from a particular position and return back at another position. Currently, there are about over 500 bike-sharing programs around the world which is composed of over 500 thousands bicycles. Today, there exists great interest in these systems due to their important role in traffic, environmental and health issues.
+
+> Apart from interesting real world applications of bike sharing systems, the characteristics of data being generated by these systems make them attractive for the research. Opposed to other transport services such as bus or subway, the duration of travel, departure and arrival position is explicitly recorded in these systems. This feature turns bike sharing system into a virtual sensor network that can be used for sensing mobility in the city. Hence, it is expected that most of important events in the city could be detected via monitoring these data.
+
+An interesting thing about this data set is that it is a regression problem (response variable is the number of bike rentals), but a normal distribution for the response is not appropriate (since the data are integer counts).  A good option for this data set would be a Poisson regression model.
+
+#### Data Set Option 6: Your Proposal
 
 You are also welcome to propose using a data set of your choosing.  If you go this route, I reserve the right to veto your proposal if I don't think it will work out for the purposes of this project.  You may wish to propose multiple options.  As you do this, I suggest that you avoid time series data.  We have not studied methods for dealing with data with the dependence structures that come with data collected over time.  I'm also less likely to accept proposals involving image data, unless the data set is well curated and pre-processed.
 
@@ -115,23 +124,27 @@ Methods discussed in class (pick at least one from this list):
  * Regression:
     * Penalized regression (LASSO, ridge regression)
     * KNN regression
+    * Regression trees
     * Random forests, boosted trees
+    * Stacked ensemble of the above
  * Classification:
     * Multiple logistic regression
     * KNN Classification
+    * Classification trees
     * Random forests, boosted trees
+    * Stacked ensemble of the above
 
 Methods not discussed in class:
 
  * Regression:
     * Smoothing splines
     * B-splines
-    * Local regression
+    * Local regression (LOESS and variants)
     * Neural networks
     * Partial Least Squares
     * Grouped LASSO
     * Mixed or random effects models (These models are not really relevant to the four data sets I have posted, but come up very often in data analyses more oriented towards inference than prediction or classification.  The idea is that we made multiple measurements on the same object or person or that are otherwise connected, so we cannot assume that the data are independent.  This is a great topic to learn about, especially if you are more interested in statistial inference than statistical learning type of problems -- but only if you are comfortable with probability.  You would need to find your own data set to focus on this method.  If you want to explore this method but need help identifying a relevant data set, let me know.)
-    * generalized linear models with a multinomial, poisson, or negative binomial family
+    * generalized linear models with a poisson or negative binomial family (these models are particularly relevant to the bike share data)
  * Classification:
     * Linear or Quadratic Discriminant Analysis
     * Support vector machines
@@ -144,7 +157,7 @@ Methods not discussed in class:
     * Hierarchical clustering
  * Another method proposed by your group, subject to my approval
 
-If you would like, I can suggest methods appropriate to your group's chosen data set.  My goal will be to encourage diversity in the methods explored by the different groups so that the class can see a variety of different methods.  That means that I reserve the right to reject your group's initially proposed method, if multiple groups propose to use the same method.
+If you would like, I can suggest methods appropriate to your group's chosen data set.
 
 ### Guidelines for the primary analysis write-up
 
@@ -155,32 +168,18 @@ Please follow the structure below:
 1. Title
 2. Summary: an introduction to the statistical problem you are addressing, brief description of the methods you consider, and summary of the results.  Aim for less than a page.
 3. Data: a brief summary of key features of the dataset.  You should define each variable that will be used (to the level that it is possible to do this, given the information provided by your data source).  It would also be good to include a few plots showing a few key insights about the data set.  Note that there will probably not be enough space to present every plot you make during the course of conducting your analysis; you will have to select a small number of the most informative plots to include.  At least a few sentences of context and description of the dataset should be included, and the number of observations in the data set should be stated.  Aim for about 2 pages.  
-4. Methods: a description of the statistical methods included in your analysis, your use of train/test splits and cross-validation to evaluate model performance.  Aim for about 2 pages.
+4. Methods: a description of the statistical methods included in your analysis, your use of train/test splits and cross-validation to evaluate model performance.  This should include a formal statement of any models fit and/or description of procedures used to fit the models.  Aim for about 2 pages.
 5. Results: a presentation of your results, including at a minimum a comparison of the relative performance of the different models you considered.  For some projects, other results may need to be presented as well.
 6. Discussion: summarize your work, its limitations, and possible future steps/improvements.
-7. References: cite all sources in proper format.
+7. References: cite all sources in a standard format.
 
-Items one through 6 above should total 10 pages at most, including figures and tables.  You should use 11 or 12 point font and no less than 1 inch margins all around.
+Items one through 6 above should total 10 pages at most, including figures and tables.  Fewer pages is also fine, but if your report is looking like it will be less than 5 pages please check with me to make sure you're describing your work in enough detail.  You should use 11 or 12 point font and no less than 1 inch margins all around.
 
-### Group presentation
+### Proper Citations
 
-Each group will present their project to the class in a 15 to 20 minute presentation.  You should prepare slides, or a website with slide-like content to walk through (I have in mind here groups who may want to demo interactive graphics), or similar.  Each group member will be expected to lead a part of this presentation.  The presentation should cover the following topics:
+Any direct quotes from other sources should be minimal (a sentence or two, not multiple paragraphs!), should be between quotation marks, and should be cited **at the point of quotation**.  It's ok to include a figure from another source, but this should be cited in the figure caption.
 
-1. Data set and context
-    * A description of the data set, variables involved, and questions you are trying to answer/goals of your analysis.
-
-2. Methods
-    * A brief statement of the "in-class" method you are using
-    * A more detailed statement of the "out-of-class" method you are using
-
-3. Results
-    * Presentation and interpretation of visualizations of results, if applicable
-    * A discussion of how you evaluated method(s)
-        * Train/test splits?
-        * Cross-validation schemes?
-        * Measures of performance? (MSE?  RMSE?  Classification error rate?  Something else?)
-    * A description of how the model(s) did
-    * Conclusions
+I will deduct a very large amount of points if you take text from another source without citing it properly.  If you have any questions on how to cite appropriately, ask!
 
 ### Collaboration on GitHub
 

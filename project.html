@@ -7,6 +7,7 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
@@ -69,9 +70,7 @@ h6 {
 </style>
 
 
-</head>
 
-<body>
 
 <style type = "text/css">
 .main-container {
@@ -85,7 +84,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -190,8 +188,6 @@ $(document).ready(function () {
 });
 </script>
 
-<div class="container-fluid main-container">
-
 <!-- tabsets -->
 
 <style type="text/css">
@@ -248,20 +244,17 @@ $(document).ready(function () {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
 
 
 
@@ -323,24 +316,28 @@ $(document).ready(function () {
 <li>the resulting knitted pdf file</li>
 </ol></li>
 </ol>
-<div id="note-the-remaining-text-below-is-from-last-years-project-description.-i-have-left-it-here-for-your-reference-but-the-details-will-likely-change.-more-to-come-in-october-or-november." class="section level2">
-<h2>Note: The remaining text below is from last year’s project description. I have left it here for your reference, but the details will likely change. More to come in October or November.</h2>
 <div id="deadlines" class="section level3">
 <h3>Deadlines</h3>
 <p>This part of the page will be updated with more details and deadlines later.</p>
-<!--
-* 5:00 PM Wed Oct 31: Fill out this google form indicating your preference for data set(s) to work with and/or your preference for group members: https://goo.gl/forms/EY1HLehwEURTrWpt2
-* 5:00 PM Fri Nov 9: First steps for the project (there are enough little things to do here that I want to see a small commit from every group member.  No one group member should do all the things!):
-    * Each team member should clone the repository to RStudio Server.
-    * Add your data file(s) to the repository (for the group working on dialects - I will do this for you by the evening of Monday, Nov 5).
-    * Create an R Markdown document that will have your preliminary/exploratory analyses in it, and write R code there to read in the data file to a data frame.
-    * Do a little initial exploration of the data set (a plot or two, examine whether there are missing values, start on any cleanup that needs to be done).
-    * Commit, push, and pull often.
-* 5:00 PM Fri Nov 30: working code implementing your methods
-* Fri Nov 30, Mon Dec 3, or Tues Dec 4: Draft slides done, let's meet to discuss them!  Book an appointment here: https://calendar.google.com/calendar/selfsched?sstoken=UUFsQ1lfNUJHOHNrfGRlZmF1bHR8NDcxZTFkMTIwNDEwZjI3MDhkZWI2ZTcyNDU5YzY5NzI
-* Dec. 5 and 7 (and Dec 10 if necessary): In-class presentations
-* End of finals period: final submission of write-up pushed to GitHub.
--->
+<ul>
+<li><strong>5:00 PM Tues Nov 12:</strong> Group memberships. <a href="https://forms.gle/ZqiGzfCvztPPvFgKA">Fill out this google form</a> with your preference for group members: . Groups should have 2 or 3 members. Only one person per proposed group needs to do this.</li>
+<li><strong>5:00 PM Sat Nov 16:</strong> Project proposals and description of data sources.
+<ul>
+<li>Each team member should clone the repository to RStudio Server or their local computer.</li>
+<li>Create an R Markdown document that will have your preliminary/exploratory analyses in it.</li>
+<li>Add 1 paragraph describing your data set and 1 paragraph outlining your proposed in-class and out-of-class methods.</li>
+<li>Submit by committing to your group’s GitHub repository. <strong>I’d like to see a commit from at least 2 different group members.</strong> Commit, push, and pull often!</li>
+</ul></li>
+<li><strong>5:00 PM Tue Nov 26:</strong> First look at data:
+<ul>
+<li>Add your data file(s) to the repository (for any groups working on dialects - I will do this for you by the evening of Saturday, Nov 16).</li>
+<li>Add code to your R markdown document to read the data in.</li>
+<li>Do a little initial exploration of the data set (exploratory plots, examine whether there are missing values, start on any cleanup that needs to be done). <strong>By this time, all three group members should have at least one commit.</strong> Commit, push, and pull often!</li>
+</ul></li>
+<li><strong>5:00 PM Sat Dec 07:</strong> At this check point, you should have implemented your in-class method and have working code for some variation on your out-of-class method. Submit by committing to your group’s GitHub repository.</li>
+<li><strong>11:59 AM (noon) Tue Dec 17:</strong> Final submission of R markdown file and pdf for report and supplementary materials. Submit by uploading to google drive and sending me an email (cc’ing all group members) letting me know you have done that.</li>
+<li><strong>11:59 AM (noon) Tue Dec 17:</strong> Group dynamic report by email, <strong>sent only to me</strong>.</li>
+</ul>
 </div>
 <div id="data-sets" class="section level3">
 <h3>Data Sets</h3>
@@ -364,11 +361,12 @@ $(document).ready(function () {
 <p>Using a dataset of intake information including breed, color, sex, and age from the Austin Animal Center, we’re asking Kagglers to predict the outcome for each animal.</p>
 <p>We also believe this dataset can help us understand trends in animal outcomes. These insights could help shelters focus their energy on specific animals who need a little extra help finding a new home.</p>
 </blockquote>
+<p>A fair amount of data cleaning and preprocessing would need to be done to work with this data set.</p>
 </div>
 <div id="data-set-option-3-superconductivity" class="section level4">
 <h4>Data Set Option 3: Superconductivity</h4>
 <p><a href="https://archive.ics.uci.edu/ml/datasets/Superconductivty+Data" class="uri">https://archive.ics.uci.edu/ml/datasets/Superconductivty+Data</a></p>
-<p><a href="https://www.sciencedirect.com/science/article/pii/S0927025618304877?via%3Dihub">https://www.sciencedirect.com/science/article/pii/S0927025618304877?via%3Dihub</a></p>
+<p><a href="https://www.sciencedirect.com/science/article/pii/S0927025618304877?via%3Dihub" class="uri">https://www.sciencedirect.com/science/article/pii/S0927025618304877?via%3Dihub</a></p>
 <p>Here’s a quote from the original article linked above, Hamidieh, Kam, A data-driven statistical model for predicting the critical temperature of a superconductor, Computational Materials Science, Volume 154, November 2018, Pages 346-354.</p>
 <blockquote>
 <p>Superconducting materials - materials that conduct current with zero resistance - have significant practical applications. Perhaps the best known application is in the Magnetic Resonance Imaging (MRI) systems widely employed by health care professionals for detailed internal body imaging…</p>
@@ -377,19 +375,34 @@ $(document).ready(function () {
 <p>In this study, we take an entirely data-driven approach to create a statistical model that predicts <span class="math inline">\(T_c\)</span> based on its chemical formula.</p>
 </blockquote>
 </div>
-<div id="data-set-option-4-restaurant-revenue-prediction" class="section level4">
-<h4>Data Set Option 4: Restaurant Revenue Prediction</h4>
-<p><a href="https://www.kaggle.com/c/restaurant-revenue-prediction" class="uri">https://www.kaggle.com/c/restaurant-revenue-prediction</a></p>
-<p>Here’s a description of this contest from Kaggle:</p>
+<div id="data-set-option-4-bank-marketing" class="section level4">
+<h4>Data Set Option 4: Bank Marketing</h4>
+<p><a href="http://archive.ics.uci.edu/ml/datasets/Bank+Marketing" class="uri">http://archive.ics.uci.edu/ml/datasets/Bank+Marketing</a></p>
+<p>Here’s a description of this data set from the link above:</p>
 <blockquote>
-<p>With over 1,200 quick service restaurants across the globe, TFI is the company behind some of the world’s most well-known brands: Burger King, Sbarro, Popeyes, Usta Donerci, and Arby’s. They employ over 20,000 people in Europe and Asia and make significant daily investments in developing new restaurant sites.</p>
-<p>Right now, deciding when and where to open new restaurants is largely a subjective process based on the personal judgement and experience of development teams. This subjective data is difficult to accurately extrapolate across geographies and cultures.</p>
-<p>New restaurant sites take large investments of time and capital to get up and running. When the wrong location for a restaurant brand is chosen, the site closes within 18 months and operating losses are incurred.</p>
-<p>Finding a mathematical model to increase the effectiveness of investments in new restaurant sites would allow TFI to invest more in other important business areas, like sustainability, innovation, and training for new employees. Using demographic, real estate, and commercial data, this competition challenges you to predict the annual restaurant sales of 100,000 regional locations.</p>
+<p>The data is related with direct marketing campaigns of a Portuguese banking institution. The marketing campaigns were based on phone calls. Often, more than one contact to the same client was required, in order to access if the product (bank term deposit) would be (‘yes’) or not (‘no’) subscribed.</p>
+</blockquote>
+<blockquote>
+<p>The classification goal is to predict if the client will subscribe (yes/no) a term deposit (variable y).</p>
+</blockquote>
+<blockquote>
+<p>Source: S. Moro, P. Cortez and P. Rita. A Data-Driven Approach to Predict the Success of Bank Telemarketing. Decision Support Systems, Elsevier, 62:22-31, June 2014</p>
 </blockquote>
 </div>
-<div id="data-set-option-5-your-proposal" class="section level4">
-<h4>Data Set Option 5: Your Proposal</h4>
+<div id="data-set-option-5-bike-share-use" class="section level4">
+<h4>Data Set Option 5: Bike share use</h4>
+<p><a href="https://archive.ics.uci.edu/ml/datasets/Bike+Sharing+Dataset" class="uri">https://archive.ics.uci.edu/ml/datasets/Bike+Sharing+Dataset</a></p>
+<p>Here’s a description of this data set from the link above:</p>
+<blockquote>
+<p>Bike sharing systems are new generation of traditional bike rentals where whole process from membership, rental and return back has become automatic. Through these systems, user is able to easily rent a bike from a particular position and return back at another position. Currently, there are about over 500 bike-sharing programs around the world which is composed of over 500 thousands bicycles. Today, there exists great interest in these systems due to their important role in traffic, environmental and health issues.</p>
+</blockquote>
+<blockquote>
+<p>Apart from interesting real world applications of bike sharing systems, the characteristics of data being generated by these systems make them attractive for the research. Opposed to other transport services such as bus or subway, the duration of travel, departure and arrival position is explicitly recorded in these systems. This feature turns bike sharing system into a virtual sensor network that can be used for sensing mobility in the city. Hence, it is expected that most of important events in the city could be detected via monitoring these data.</p>
+</blockquote>
+<p>An interesting thing about this data set is that it is a regression problem (response variable is the number of bike rentals), but a normal distribution for the response is not appropriate (since the data are integer counts). A good option for this data set would be a Poisson regression model.</p>
+</div>
+<div id="data-set-option-6-your-proposal" class="section level4">
+<h4>Data Set Option 6: Your Proposal</h4>
 <p>You are also welcome to propose using a data set of your choosing. If you go this route, I reserve the right to veto your proposal if I don’t think it will work out for the purposes of this project. You may wish to propose multiple options. As you do this, I suggest that you avoid time series data. We have not studied methods for dealing with data with the dependence structures that come with data collected over time. I’m also less likely to accept proposals involving image data, unless the data set is well curated and pre-processed.</p>
 <p>Here are some places where you can look for data sets:</p>
 <ul>
@@ -410,13 +423,17 @@ $(document).ready(function () {
 <ul>
 <li>Penalized regression (LASSO, ridge regression)</li>
 <li>KNN regression</li>
+<li>Regression trees</li>
 <li>Random forests, boosted trees</li>
+<li>Stacked ensemble of the above</li>
 </ul></li>
 <li>Classification:
 <ul>
 <li>Multiple logistic regression</li>
 <li>KNN Classification</li>
+<li>Classification trees</li>
 <li>Random forests, boosted trees</li>
+<li>Stacked ensemble of the above</li>
 </ul></li>
 </ul>
 <p>Methods not discussed in class:</p>
@@ -425,12 +442,12 @@ $(document).ready(function () {
 <ul>
 <li>Smoothing splines</li>
 <li>B-splines</li>
-<li>Local regression</li>
+<li>Local regression (LOESS and variants)</li>
 <li>Neural networks</li>
 <li>Partial Least Squares</li>
 <li>Grouped LASSO</li>
 <li>Mixed or random effects models (These models are not really relevant to the four data sets I have posted, but come up very often in data analyses more oriented towards inference than prediction or classification. The idea is that we made multiple measurements on the same object or person or that are otherwise connected, so we cannot assume that the data are independent. This is a great topic to learn about, especially if you are more interested in statistial inference than statistical learning type of problems – but only if you are comfortable with probability. You would need to find your own data set to focus on this method. If you want to explore this method but need help identifying a relevant data set, let me know.)</li>
-<li>generalized linear models with a multinomial, poisson, or negative binomial family</li>
+<li>generalized linear models with a poisson or negative binomial family (these models are particularly relevant to the bike share data)</li>
 </ul></li>
 <li>Classification:
 <ul>
@@ -450,7 +467,7 @@ $(document).ready(function () {
 </ul></li>
 <li>Another method proposed by your group, subject to my approval</li>
 </ul>
-<p>If you would like, I can suggest methods appropriate to your group’s chosen data set. My goal will be to encourage diversity in the methods explored by the different groups so that the class can see a variety of different methods. That means that I reserve the right to reject your group’s initially proposed method, if multiple groups propose to use the same method.</p>
+<p>If you would like, I can suggest methods appropriate to your group’s chosen data set.</p>
 </div>
 <div id="guidelines-for-the-primary-analysis-write-up" class="section level3">
 <h3>Guidelines for the primary analysis write-up</h3>
@@ -461,39 +478,17 @@ $(document).ready(function () {
 <li>Summary: an introduction to the statistical problem you are addressing, brief description of the methods you consider, and summary of the results. Aim for less than a page.</li>
 <li>Data: a brief summary of key features of the dataset. You should define each variable that will be used (to the level that it is possible to do this, given the information provided by your data source). It would also be good to include a few plots showing a few key insights about the data set. Note that there will probably not be enough space to present every plot you make during the course of conducting your analysis; you will have to select a small number of the most informative plots to include. At least a few sentences of context and description of the dataset should be included, and the number of observations in the data set should be stated. Aim for about 2 pages.<br />
 </li>
-<li>Methods: a description of the statistical methods included in your analysis, your use of train/test splits and cross-validation to evaluate model performance. Aim for about 2 pages.</li>
+<li>Methods: a description of the statistical methods included in your analysis, your use of train/test splits and cross-validation to evaluate model performance. This should include a formal statement of any models fit and/or description of procedures used to fit the models. Aim for about 2 pages.</li>
 <li>Results: a presentation of your results, including at a minimum a comparison of the relative performance of the different models you considered. For some projects, other results may need to be presented as well.</li>
 <li>Discussion: summarize your work, its limitations, and possible future steps/improvements.</li>
-<li>References: cite all sources in proper format.</li>
+<li>References: cite all sources in a standard format.</li>
 </ol>
-<p>Items one through 6 above should total 10 pages at most, including figures and tables. You should use 11 or 12 point font and no less than 1 inch margins all around.</p>
+<p>Items one through 6 above should total 10 pages at most, including figures and tables. Fewer pages is also fine, but if your report is looking like it will be less than 5 pages please check with me to make sure you’re describing your work in enough detail. You should use 11 or 12 point font and no less than 1 inch margins all around.</p>
 </div>
-<div id="group-presentation" class="section level3">
-<h3>Group presentation</h3>
-<p>Each group will present their project to the class in a 15 to 20 minute presentation. You should prepare slides, or a website with slide-like content to walk through (I have in mind here groups who may want to demo interactive graphics), or similar. Each group member will be expected to lead a part of this presentation. The presentation should cover the following topics:</p>
-<ol style="list-style-type: decimal">
-<li>Data set and context
-<ul>
-<li>A description of the data set, variables involved, and questions you are trying to answer/goals of your analysis.</li>
-</ul></li>
-<li>Methods
-<ul>
-<li>A brief statement of the “in-class” method you are using</li>
-<li>A more detailed statement of the “out-of-class” method you are using</li>
-</ul></li>
-<li>Results
-<ul>
-<li>Presentation and interpretation of visualizations of results, if applicable</li>
-<li>A discussion of how you evaluated method(s)
-<ul>
-<li>Train/test splits?</li>
-<li>Cross-validation schemes?</li>
-<li>Measures of performance? (MSE? RMSE? Classification error rate? Something else?)</li>
-</ul></li>
-<li>A description of how the model(s) did</li>
-<li>Conclusions</li>
-</ul></li>
-</ol>
+<div id="proper-citations" class="section level3">
+<h3>Proper Citations</h3>
+<p>Any direct quotes from other sources should be minimal (a sentence or two, not multiple paragraphs!), should be between quotation marks, and should be cited <strong>at the point of quotation</strong>. It’s ok to include a figure from another source, but this should be cited in the figure caption.</p>
+<p>I will deduct a very large amount of points if you take text from another source without citing it properly. If you have any questions on how to cite appropriately, ask!</p>
 </div>
 <div id="collaboration-on-github" class="section level3">
 <h3>Collaboration on GitHub</h3>
@@ -531,7 +526,6 @@ $(document).ready(function () {
 <li><p>Written Report: How effectively does the written report communicate the goals, procedures, and results of the study? Are the claims adequately supported? How well is the report structured and organized? Are all of the figures and tables numbered, captioned and appropriately referenced? Does the writing style enhance what the group is trying to communicate? How well is the report edited? Are the statistical claims justified?</p></li>
 </ul>
 </div>
-</div>
 
 
 
@@ -550,6 +544,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

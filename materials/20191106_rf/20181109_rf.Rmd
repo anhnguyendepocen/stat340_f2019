@@ -1,0 +1,192 @@
+---
+title: "Inducing Uncorrelated Component Models; Random Forests"
+output:
+  pdf_document:
+    keep_tex: true
+geometry: margin=1.5cm
+header-includes:
+   - \usepackage{booktabs}
+   - \usepackage{multicol}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+## Running Data Set Example
+
+Boston housing prices; predicting median value.
+
+```{r, message = FALSE}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+library(purrr)
+library(glmnet)
+library(caret)
+library(rpart)
+
+# read in data
+Boston <- read_csv("http://www.evanlray.com/data/mass/Boston.csv")
+
+# Initial train/test split ("estimation"/test) and cross-validation folds
+set.seed(63770)
+tt_inds <- caret::createDataPartition(Boston$medv, p = 0.8)
+train_set <- Boston %>% slice(tt_inds[[1]])
+test_set <- Boston %>% slice(-tt_inds[[1]])
+```
+
+\newpage
+
+### Strategy 1: Bagging
+
+Algorithm:
+
+ 1. Allocate space to save test set predictions from B component models (often B is in the range of 500 or 1000)
+ 2. For $b = 1, \ldots, B$
+    a. Draw a bootstrap sample (i.e., a sample of $n$ rows/observations, drawn with replacement) from the original data set.
+    b. Fit the model to the bootstrap sample from step a.
+    c. Obtain test set predictions and save them
+ 3. Ensemble prediction combines predictions for the $B$ models obtained in step 1 (most commonly, simple average for regression or majority vote for classification)
+
+**I would never implement this by hand, code just for illustration of the idea!**
+
+```{r bootstrap_trees, message = FALSE, warning = FALSE, cache=TRUE}
+B <- 500
+
+component_test_mses <- rep(NA, B)
+component_test_predictions <- matrix(NA, nrow = nrow(test_set), ncol = B)
+
+for(b in seq_len(B)) {
+  n <- nrow(train_set)
+  
+  bootstrap_resampled_train <- train_set %>%
+    dplyr::sample_n(size = n, replace = TRUE)
+  
+  tree_fit <- train(medv ~ .,
+    data = bootstrap_resampled_train,
+    method = "rpart")
+  
+  test_predictions_b <- predict(tree_fit, newdata = test_set)
+  
+  component_test_mses[b] <- mean((test_predictions_b - test_set$medv)^2)
+  component_test_predictions[, b] <- test_predictions_b
+}
+
+ensemble_test_predictions <- apply(component_test_predictions, 1, mean)
+ensemble_test_mse <- mean((ensemble_test_predictions - test_set$medv)^2)
+
+single_tree <- train(medv ~ .,
+    data = bootstrap_resampled_train,
+    method = "rpart")
+single_tree_test_predictions <- predict(single_tree, newdata = test_set)
+single_tree_test_mse <- mean((single_tree_test_predictions - test_set$medv)^2)
+```
+
+```{r}
+single_tree_test_mse
+ensemble_test_mse
+```
+
+\newpage
+
+```{r make_plot, fig.height=3}
+ggplot() +
+  geom_boxplot(
+    data = data.frame(mse = component_test_mses),
+    mapping = aes(y = mse)) +
+  geom_hline(
+    yintercept = ensemble_test_mse,
+    color = "orange") +
+  geom_hline(
+    yintercept = single_tree_test_mse,
+    color = "cornflowerblue") +
+  ylim(c(0, 70))
+```
+
+\newpage
+
+### Strategy 2: Feature Subsets
+
+Similar to above, but different subsets of the features (explanatory variables) are considered for each model, or at different stages within estimation for each model.
+
+ * We could divide the explanatory variables into different groups, and train different models on different subsets of the available explanatory variables.
+    * Only effective if there are lots of explanatory variables available.
+
+```{r feature_subset_trees, message = FALSE, warning = FALSE, cache=TRUE}
+names(train_set)
+B <- 500
+
+component_test_mses <- rep(NA, B)
+component_test_predictions <- matrix(NA, nrow = nrow(test_set), ncol = B)
+
+for(b in seq_len(B)) {
+  features_subset_train <- train_set %>%
+    dplyr::select(c(sample(13, size = 6, replace = FALSE), 14))
+  
+  tree_fit <- train(medv ~ .,
+    data = features_subset_train,
+    method = "rpart")
+  
+  test_predictions_b <- predict(tree_fit, newdata = test_set)
+  
+  component_test_mses <- mean((test_predictions_b - test_set$medv)^2)
+  component_test_predictions[, b] <- test_predictions_b
+}
+
+ensemble_test_predictions <- apply(component_test_predictions, 1, mean)
+ensemble_test_mse <- mean((ensemble_test_predictions - test_set$medv)^2)
+```
+
+```{r}
+single_tree_test_mse
+ensemble_test_mse
+```
+
+\newpage
+
+```{r make_plot2, fig.height=3}
+ggplot() +
+  geom_boxplot(
+    data = data.frame(mse = component_test_mses),
+    mapping = aes(y = mse)) +
+  geom_hline(
+    yintercept = ensemble_test_mse,
+    color = "orange") +
+  geom_hline(
+    yintercept = single_tree_test_mse,
+    color = "cornflowerblue") +
+  ylim(c(0, 70))
+```
+
+\newpage
+
+## Random Forests
+
+```{r rf, cache = TRUE, message=FALSE}
+library(randomForest)
+rf_fit <- train(
+  form = medv ~ .,
+  data = train_set,
+  method = "rf",
+  trControl = trainControl(method = "oob",
+    returnResamp = "all",
+    savePredictions = TRUE),
+  tuneLength = 10
+)
+
+rf_fit$results
+```
+
+```{r}
+rf_mse <- mean((test_set$medv - predict(rf_fit, newdata = test_set))^2)
+rf_mse
+```
+
+```{r}
+importance(rf_fit$finalModel, type = 2)
+varImpPlot(rf_fit$finalModel, type = 2)
+```

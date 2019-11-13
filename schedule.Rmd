@@ -303,6 +303,8 @@ make_week_box("week10", TRUE, "Week 10: Nov 04 -- Nov 08", "
  * **In class**, we will work on:
     * Quiz on logistic regression and classification error
     * Start on bagging, feature subsets, and random forests
+        * lecture notes: [pdf](materials/20191106_rf/lecture_notes.pdf)
+        * hand out: [pdf](materials/20191106_rf/20181109_rf.pdf)
  * **After class**, please:
 ")
 ```
@@ -317,6 +319,10 @@ make_week_box("week11", TRUE, "Week 11: Nov 11 -- Nov 15", "
 
 #### Wed, Nov 13
  * **In class**, we will work on:
+    * quiz on trees and penalized estimation
+    * Start on gradient tree boosting
+        * hand out: [pdf](materials/20191113_intro_gradient_boosting/20191113_intro_gradient_boosting.pdf)
+        * lecture notes: [pdf](materials/20191113_intro_gradient_boosting/lecture_notes.pdf)
  * **After class**, please:
 
 

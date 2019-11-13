@@ -1,0 +1,1153 @@
+---
+title: "Intro to Gradient Tree Boosting"
+output:
+  pdf_document:
+    keep_tex: true
+geometry: margin=1.5cm
+header-includes:
+   - \usepackage{booktabs}
+   - \usepackage{multicol}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+# Introduction
+
+### Goal
+
+ * Ensemble model
+ * Component models are diverse
+
+### Previous Strategies
+
+1. Pick models that are different from each other in some way:
+
+    * different model structure
+    * different training sets (bagging)
+    * different use of features
+
+2. Estimate the models totally separately from each other
+
+3. Put them together by averaging, majority vote, or stacking
+
+
+#### Specific example: random forests
+
+ * Each tree used a different training set (bootstrap sample)
+ * Each tree uses a random subset of features in searching for each split.
+ * The trees are all estimated separately, then predictions are combined later.
+ * For example, for regression:
+
+$$\hat{f}(x_i) = \frac{1}{B} \sum_b \hat{f}^{(b)}(x_i)$$
+
+$\hat{f}(x_i)$ is the random forest prediction
+
+$\hat{f}^{(b)}(x_i)$ represents the prediction from one tree in the forest
+
+
+### New Strategy: Boosting
+
+Boosting takes a sequential approach to estimation:
+
+ 1. Start with a simple initial model (e.g., for regression start by predicting the mean).
+ 2. Repeat the following:
+    a. Fit a model that is specifically tuned to training set observations that the current ensemble does not predict well
+    b. Update the ensemble by adding in this new model
+
+Why is this a good idea?
+
+ * New component models are specifically different from what's already in the ensemble!
+
+\newpage
+
+### A Specific Example: Gradient Tree Boosting
+
+Let's start with building some intuition for the method, and define it more carefully later.
+
+In this example, our component models will be "stumps": trees with only one split.
+
+Here's a made up regression problem, and an initial prediction for each observation, given by the sample mean for the response variable.
+
+```{r, echo=FALSE, message = FALSE, warning=FALSE}
+library(purrr)
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+library(rpart)
+
+set.seed(96442)
+
+n <- 25
+train_data <- data.frame(
+  x = runif(n = n, min = -10, max = 10)
+) %>%
+  mutate(
+    y = 50 + 2 * x - 12 * x + 0.2 * x^3 + rnorm(n, sd = 10)
+  )
+
+ggplot(data = train_data, mapping = aes(x = x, y = y)) +
+  geom_point()
+```
+
+```{r, echo=FALSE}
+calc_f_hat <- function(x, b0, tree_fits, tree_weights) {
+  x_df <- data.frame(x = x)
+  
+  if(length(tree_fits) > 0) {
+    tree_preds <- map_dfc(tree_fits, predict, newdata = x_df) %>%
+      as.matrix()
+    tree_preds <- tree_preds %*% tree_weights
+    tree_preds <- tree_preds[, 1]
+  } else {
+    tree_preds <- rep(0, length(x))
+  }
+  
+  results <- b0 + tree_preds
+  
+  return(results)
+}
+```
+
+```{r, fig.height=6, echo = FALSE}
+component_alpha <- 0.3
+component_num <- 1
+
+b0 <- mean(train_data$y)
+tree_fits <- vector("list", 0)
+tree_weights <- NULL
+
+x_grid <- data.frame(
+  x = seq(from = -10, to = 10, length = 501)
+)
+
+component_model_preds_grid <- x_grid %>%
+  mutate(
+    component_num = component_num,
+    y_hat = b0
+  )
+
+plot_df_grid <- x_grid %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights)
+  )
+
+plot_df <- train_data %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights),
+    derivative = y - y_hat # 2 * (y - y_hat)
+  )
+
+p_comp <- ggplot() +
+  geom_line(data = component_model_preds_grid, mapping = aes(x = x, y = y_hat, group = factor(component_num)), alpha = 0.2, color = "red") +
+  ggtitle("All Current Component Model Predictions")
+
+p1 <- ggplot() +
+  geom_errorbar(data = plot_df %>% filter(y < y_hat), mapping = aes(x = x, ymin = y, ymax = y_hat), color = "cornflowerblue") +
+  geom_errorbar(data = plot_df %>% filter(y >= y_hat), mapping = aes(x = x, ymin = y_hat, ymax = y), color = "cornflowerblue") +
+  geom_point(data = train_data, mapping = aes(x = x, y = y)) +
+  geom_line(data = component_model_preds_grid, mapping = aes(x = x, y = y_hat, group = factor(component_num)), alpha = component_alpha, color = "red") +
+  geom_line(data = plot_df_grid, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = plot_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Ensemble Predictions")
+
+p2 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ylab("residual") +
+  ggtitle("Response variable for next component model:\nWhere does current ensemble go wrong?")
+
+#grid.arrange(p_comp, p1, p2, ncol = 1)
+grid.arrange(p1, p2, ncol = 1)
+```
+
+\newpage
+
+```{r, fig.height=9, echo=FALSE}
+component_num <- component_num + 1
+
+new_tree <- rpart(derivative ~ x, data = plot_df,
+  control = rpart.control(
+    maxdepth = 1,
+    cp = 0,
+    maxsurrogate = 0,
+    maxcompete = 0,
+    minsplit = 2,
+    minbucket = 1)
+  )
+tree_fits <- c(tree_fits, list(new_tree))
+tree_weights <- c(tree_weights, 1)
+
+new_tree_preds_grid_df <- x_grid %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = x_grid),
+    component_num = component_num
+  )
+
+new_tree_preds_grid_df_0.01 <- new_tree_preds_grid_df %>%
+  mutate(
+    y_hat = 0.1 * y_hat
+  )
+
+new_tree_preds_df <- train_data %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = train_data),
+    component_num = component_num
+  )
+
+new_tree_preds_df_0.01 <- new_tree_preds_df %>%
+  mutate(
+    y_hat = 0.1 * y_hat
+  )
+
+component_model_preds_grid_0.01 <- bind_rows(
+  component_model_preds_grid,
+  new_tree_preds_grid_df_0.01
+)
+
+component_model_preds_grid <- bind_rows(
+  component_model_preds_grid,
+  new_tree_preds_grid_df
+)
+
+p0 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_line(data = new_tree_preds_grid_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = new_tree_preds_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ylab("residual") +
+  ggtitle("New component model fit")
+
+p0_0.01 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_line(data = new_tree_preds_grid_df_0.01, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = new_tree_preds_df_0.01, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ylab("residual") +
+  ggtitle("New component model fit; downweighted")
+
+plot_df_grid <- x_grid %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights)
+  )
+
+plot_df <- train_data %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights),
+    derivative = y - y_hat #2 * (y - y_hat)
+  )
+
+
+plot_df_grid_0.01 <- x_grid %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = 0.1)
+  )
+
+plot_df_0.01 <- train_data %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = 0.1),
+    derivative = y - y_hat #2 * (y - y_hat)
+  )
+
+p_comp <- ggplot() +
+  geom_line(data = component_model_preds_grid, mapping = aes(x = x, y = y_hat, group = factor(component_num)), alpha = component_alpha, color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Component Model Predictions")
+
+p_comp_0.01 <- ggplot() +
+  geom_line(data = component_model_preds_grid_0.01, mapping = aes(x = x, y = y_hat, group = factor(component_num)), alpha = component_alpha, color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Component Model Predictions; downweighted")
+
+
+p1 <- ggplot() +
+  geom_errorbar(data = plot_df %>% filter(y < y_hat),
+    mapping = aes(x = x, ymin = y, ymax = y_hat),
+    color = "cornflowerblue") +
+  geom_errorbar(data = plot_df %>% filter(y >= y_hat),
+    mapping = aes(x = x, ymin = y_hat, ymax = y),
+    color = "cornflowerblue") +
+  geom_point(data = train_data, mapping = aes(x = x, y = y)) +
+  geom_line(data = plot_df_grid, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = plot_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Ensemble Predictions")
+
+p1_0.01 <- ggplot() +
+  geom_errorbar(data = plot_df_0.01 %>% filter(y < y_hat),
+    mapping = aes(x = x, ymin = y, ymax = y_hat),
+    color = "cornflowerblue") +
+  geom_errorbar(data = plot_df_0.01 %>% filter(y >= y_hat),
+    mapping = aes(x = x, ymin = y_hat, ymax = y),
+    color = "cornflowerblue") +
+  geom_point(data = train_data, mapping = aes(x = x, y = y)) +
+  geom_line(data = plot_df_grid_0.01, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = plot_df_0.01, mapping = aes(x = x, y = y_hat), color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Ensemble Predictions; downweighted")
+
+p2 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ylab("residual") +
+  ggtitle("Response variable for next component model:\nWhere does current ensemble go wrong?")
+
+grid.arrange(p0, p_comp, p1, p2, ncol = 1)
+
+
+p0_step1 <- p0
+p_comp_step1 <- p_comp
+p1_step1 <- p1
+```
+
+
+\newpage
+
+```{r, fig.height=9, echo=FALSE}
+component_num <- component_num + 1
+
+new_tree <- rpart(derivative ~ x, data = plot_df,
+  control = rpart.control(
+    maxdepth = 1,
+    cp = 0,
+    maxsurrogate = 0,
+    maxcompete = 0,
+    minsplit = 2,
+    minbucket = 1)
+  )
+tree_fits <- c(tree_fits, list(new_tree))
+tree_weights <- c(tree_weights, 1)
+
+new_tree_preds_grid_df <- x_grid %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = x_grid),
+    component_num = component_num
+  )
+
+new_tree_preds_df <- train_data %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = train_data),
+    component_num = component_num
+  )
+
+component_model_preds_grid <- bind_rows(
+  component_model_preds_grid,
+  new_tree_preds_grid_df
+)
+
+p0 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_line(data = new_tree_preds_grid_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = new_tree_preds_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ylab("residual") +
+  ggtitle("New component model fit")
+
+plot_df_grid <- x_grid %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights)
+  )
+
+plot_df <- train_data %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights),
+    derivative = y - y_hat #2 * (y - y_hat)
+  )
+
+p_comp <- ggplot() +
+  geom_line(data = component_model_preds_grid, mapping = aes(x = x, y = y_hat, group = factor(component_num)), alpha = component_alpha, color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Component Model Predictions")
+
+
+p1 <- ggplot() +
+  geom_errorbar(data = plot_df %>% filter(y < y_hat),
+    mapping = aes(x = x, ymin = y, ymax = y_hat),
+    color = "cornflowerblue") +
+  geom_errorbar(data = plot_df %>% filter(y >= y_hat),
+    mapping = aes(x = x, ymin = y_hat, ymax = y),
+    color = "cornflowerblue") +
+  geom_point(data = train_data, mapping = aes(x = x, y = y)) +
+  geom_line(data = plot_df_grid, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = plot_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Ensemble Predictions")
+
+p2 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ylab("residual") +
+  ggtitle("Response variable for next component model:\nWhere does current ensemble go wrong?")
+
+grid.arrange(p0, p_comp, p1, p2, ncol = 1)
+```
+
+
+\newpage
+
+```{r, fig.height=9, echo=FALSE}
+component_num <- component_num + 1
+
+new_tree <- rpart(derivative ~ x, data = plot_df,
+  control = rpart.control(
+    maxdepth = 1,
+    cp = 0,
+    maxsurrogate = 0,
+    maxcompete = 0,
+    minsplit = 2,
+    minbucket = 1)
+  )
+tree_fits <- c(tree_fits, list(new_tree))
+tree_weights <- c(tree_weights, 1)
+
+new_tree_preds_grid_df <- x_grid %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = x_grid),
+    component_num = component_num
+  )
+
+new_tree_preds_df <- train_data %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = train_data),
+    component_num = component_num
+  )
+
+component_model_preds_grid <- bind_rows(
+  component_model_preds_grid,
+  new_tree_preds_grid_df
+)
+
+p0 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_line(data = new_tree_preds_grid_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = new_tree_preds_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ylab("residual") +
+  ggtitle("New component model fit")
+
+plot_df_grid <- x_grid %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights)
+  )
+
+plot_df <- train_data %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights),
+    derivative = y - y_hat #2 * (y - y_hat)
+  )
+
+p_comp <- ggplot() +
+  geom_line(data = component_model_preds_grid, mapping = aes(x = x, y = y_hat, group = factor(component_num)), alpha = component_alpha, color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Component Model Predictions")
+
+
+p1 <- ggplot() +
+  geom_errorbar(data = plot_df %>% filter(y < y_hat),
+    mapping = aes(x = x, ymin = y, ymax = y_hat),
+    color = "cornflowerblue") +
+  geom_errorbar(data = plot_df %>% filter(y >= y_hat),
+    mapping = aes(x = x, ymin = y_hat, ymax = y),
+    color = "cornflowerblue") +
+  geom_point(data = train_data, mapping = aes(x = x, y = y)) +
+  geom_line(data = plot_df_grid, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = plot_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Ensemble Predictions")
+
+p2 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ylab("residual") +
+  ggtitle("Response variable for next component model:\nWhere does current ensemble go wrong?")
+
+grid.arrange(p0, p_comp, p1, p2, ncol = 1)
+```
+
+
+\newpage
+
+```{r, fig.height=9, echo=FALSE}
+component_num <- component_num + 1
+
+new_tree <- rpart(derivative ~ x, data = plot_df,
+  control = rpart.control(
+    maxdepth = 1,
+    cp = 0,
+    maxsurrogate = 0,
+    maxcompete = 0,
+    minsplit = 2,
+    minbucket = 1)
+  )
+tree_fits <- c(tree_fits, list(new_tree))
+tree_weights <- c(tree_weights, 1)
+
+new_tree_preds_grid_df <- x_grid %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = x_grid),
+    component_num = component_num
+  )
+
+new_tree_preds_df <- train_data %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = train_data),
+    component_num = component_num
+  )
+
+component_model_preds_grid <- bind_rows(
+  component_model_preds_grid,
+  new_tree_preds_grid_df
+)
+
+p0 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_line(data = new_tree_preds_grid_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = new_tree_preds_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ylab("residual") +
+  ggtitle("New component model fit")
+
+plot_df_grid <- x_grid %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights)
+  )
+
+plot_df <- train_data %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights),
+    derivative = y - y_hat #2 * (y - y_hat)
+  )
+
+p_comp <- ggplot() +
+  geom_line(data = component_model_preds_grid, mapping = aes(x = x, y = y_hat, group = factor(component_num)), alpha = component_alpha, color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Component Model Predictions")
+
+
+p1 <- ggplot() +
+  geom_errorbar(data = plot_df %>% filter(y < y_hat),
+    mapping = aes(x = x, ymin = y, ymax = y_hat),
+    color = "cornflowerblue") +
+  geom_errorbar(data = plot_df %>% filter(y >= y_hat),
+    mapping = aes(x = x, ymin = y_hat, ymax = y),
+    color = "cornflowerblue") +
+  geom_point(data = train_data, mapping = aes(x = x, y = y)) +
+  geom_line(data = plot_df_grid, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = plot_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Ensemble Predictions")
+
+p2 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ylab("residual") +
+  ggtitle("Response variable for next component model:\nWhere does current ensemble go wrong?")
+
+grid.arrange(p0, p_comp, p1, p2, ncol = 1)
+```
+
+
+\newpage
+
+```{r, fig.height=9, echo=FALSE}
+component_num <- component_num + 1
+
+new_tree <- rpart(derivative ~ x, data = plot_df,
+  control = rpart.control(
+    maxdepth = 1,
+    cp = 0,
+    maxsurrogate = 0,
+    maxcompete = 0,
+    minsplit = 2,
+    minbucket = 1)
+  )
+tree_fits <- c(tree_fits, list(new_tree))
+tree_weights <- c(tree_weights, 1)
+
+new_tree_preds_grid_df <- x_grid %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = x_grid),
+    component_num = component_num
+  )
+
+new_tree_preds_df <- train_data %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = train_data),
+    component_num = component_num
+  )
+
+component_model_preds_grid <- bind_rows(
+  component_model_preds_grid,
+  new_tree_preds_grid_df
+)
+
+p0 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_line(data = new_tree_preds_grid_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = new_tree_preds_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ylab("residual") +
+  ggtitle("New component model fit")
+
+plot_df_grid <- x_grid %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights)
+  )
+
+plot_df <- train_data %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights),
+    derivative = y - y_hat #2 * (y - y_hat)
+  )
+
+p_comp <- ggplot() +
+  geom_line(data = component_model_preds_grid, mapping = aes(x = x, y = y_hat, group = factor(component_num)), alpha = component_alpha, color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Component Model Predictions")
+
+
+p1 <- ggplot() +
+  geom_errorbar(data = plot_df %>% filter(y < y_hat),
+    mapping = aes(x = x, ymin = y, ymax = y_hat),
+    color = "cornflowerblue") +
+  geom_errorbar(data = plot_df %>% filter(y >= y_hat),
+    mapping = aes(x = x, ymin = y_hat, ymax = y),
+    color = "cornflowerblue") +
+  geom_point(data = train_data, mapping = aes(x = x, y = y)) +
+  geom_line(data = plot_df_grid, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = plot_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Ensemble Predictions")
+
+p2 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ylab("residual") +
+  ggtitle("Response variable for next component model:\nWhere does current ensemble go wrong?")
+
+grid.arrange(p0, p_comp, p1, p2, ncol = 1)
+```
+
+\newpage
+
+```{r, fig.height=9, echo=FALSE}
+component_num <- component_num + 1
+
+new_tree <- rpart(derivative ~ x, data = plot_df,
+  control = rpart.control(
+    maxdepth = 1,
+    cp = 0,
+    maxsurrogate = 0,
+    maxcompete = 0,
+    minsplit = 2,
+    minbucket = 1)
+  )
+tree_fits <- c(tree_fits, list(new_tree))
+tree_weights <- c(tree_weights, 1)
+
+new_tree_preds_grid_df <- x_grid %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = x_grid),
+    component_num = component_num
+  )
+
+new_tree_preds_df <- train_data %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = train_data),
+    component_num = component_num
+  )
+
+component_model_preds_grid <- bind_rows(
+  component_model_preds_grid,
+  new_tree_preds_grid_df
+)
+
+p0 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_line(data = new_tree_preds_grid_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = new_tree_preds_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ylab("residual") +
+  ggtitle("New component model fit")
+
+plot_df_grid <- x_grid %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights)
+  )
+
+plot_df <- train_data %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights),
+    derivative = y - y_hat #2 * (y - y_hat)
+  )
+
+p_comp <- ggplot() +
+  geom_line(data = component_model_preds_grid, mapping = aes(x = x, y = y_hat, group = factor(component_num)), alpha = component_alpha, color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Component Model Predictions")
+
+
+p1 <- ggplot() +
+  geom_errorbar(data = plot_df %>% filter(y < y_hat),
+    mapping = aes(x = x, ymin = y, ymax = y_hat),
+    color = "cornflowerblue") +
+  geom_errorbar(data = plot_df %>% filter(y >= y_hat),
+    mapping = aes(x = x, ymin = y_hat, ymax = y),
+    color = "cornflowerblue") +
+  geom_point(data = train_data, mapping = aes(x = x, y = y)) +
+  geom_line(data = plot_df_grid, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = plot_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Ensemble Predictions")
+
+p2 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ylab("residual") +
+  ggtitle("Response variable for next component model:\nWhere does current ensemble go wrong?")
+
+grid.arrange(p0, p_comp, p1, p2, ncol = 1)
+```
+
+
+\newpage
+
+```{r, fig.height=9, echo=FALSE}
+component_num <- component_num + 1
+
+new_tree <- rpart(derivative ~ x, data = plot_df,
+  control = rpart.control(
+    maxdepth = 1,
+    cp = 0,
+    maxsurrogate = 0,
+    maxcompete = 0,
+    minsplit = 2,
+    minbucket = 1)
+  )
+tree_fits <- c(tree_fits, list(new_tree))
+tree_weights <- c(tree_weights, 1)
+
+new_tree_preds_grid_df <- x_grid %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = x_grid),
+    component_num = component_num
+  )
+
+new_tree_preds_df <- train_data %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = train_data),
+    component_num = component_num
+  )
+
+component_model_preds_grid <- bind_rows(
+  component_model_preds_grid,
+  new_tree_preds_grid_df
+)
+
+p0 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_line(data = new_tree_preds_grid_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = new_tree_preds_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ggtitle("New component model fit")
+
+plot_df_grid <- x_grid %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights)
+  )
+
+plot_df <- train_data %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights),
+    derivative = y - y_hat #2 * (y - y_hat)
+  )
+
+p_comp <- ggplot() +
+  geom_line(data = component_model_preds_grid, mapping = aes(x = x, y = y_hat, group = factor(component_num)), alpha = component_alpha, color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Component Model Predictions")
+
+
+p1 <- ggplot() +
+  geom_errorbar(data = plot_df %>% filter(y < y_hat),
+    mapping = aes(x = x, ymin = y, ymax = y_hat),
+    color = "cornflowerblue") +
+  geom_errorbar(data = plot_df %>% filter(y >= y_hat),
+    mapping = aes(x = x, ymin = y_hat, ymax = y),
+    color = "cornflowerblue") +
+  geom_point(data = train_data, mapping = aes(x = x, y = y)) +
+  geom_line(data = plot_df_grid, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = plot_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Ensemble Predictions")
+
+p2 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ylab("residual") +
+  ggtitle("Response variable for next component model:\nWhere does current ensemble go wrong?")
+
+grid.arrange(p0, p_comp, p1, p2, ncol = 1)
+```
+
+
+\newpage
+
+```{r, fig.height=9, echo=FALSE}
+component_num <- component_num + 1
+
+new_tree <- rpart(derivative ~ x, data = plot_df,
+  control = rpart.control(
+    maxdepth = 1,
+    cp = 0,
+    maxsurrogate = 0,
+    maxcompete = 0,
+    minsplit = 2,
+    minbucket = 1)
+  )
+tree_fits <- c(tree_fits, list(new_tree))
+tree_weights <- c(tree_weights, 1)
+
+new_tree_preds_grid_df <- x_grid %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = x_grid),
+    component_num = component_num
+  )
+
+new_tree_preds_df <- train_data %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = train_data),
+    component_num = component_num
+  )
+
+component_model_preds_grid <- bind_rows(
+  component_model_preds_grid,
+  new_tree_preds_grid_df
+)
+
+p0 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_line(data = new_tree_preds_grid_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = new_tree_preds_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ggtitle("New component model fit")
+
+plot_df_grid <- x_grid %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights)
+  )
+
+plot_df <- train_data %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights),
+    derivative = y - y_hat #2 * (y - y_hat)
+  )
+
+p_comp <- ggplot() +
+  geom_line(data = component_model_preds_grid, mapping = aes(x = x, y = y_hat, group = factor(component_num)), alpha = component_alpha, color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Component Model Predictions")
+
+
+p1 <- ggplot() +
+  geom_errorbar(data = plot_df %>% filter(y < y_hat),
+    mapping = aes(x = x, ymin = y, ymax = y_hat),
+    color = "cornflowerblue") +
+  geom_errorbar(data = plot_df %>% filter(y >= y_hat),
+    mapping = aes(x = x, ymin = y_hat, ymax = y),
+    color = "cornflowerblue") +
+  geom_point(data = train_data, mapping = aes(x = x, y = y)) +
+  geom_line(data = plot_df_grid, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = plot_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Ensemble Predictions")
+
+p2 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ylab("residual") +
+  ggtitle("Response variable for next component model:\nWhere does current ensemble go wrong?")
+
+grid.arrange(p0, p_comp, p1, p2, ncol = 1)
+```
+
+
+\newpage
+
+```{r, fig.height=9, echo=FALSE}
+component_num <- component_num + 1
+
+new_tree <- rpart(derivative ~ x, data = plot_df,
+  control = rpart.control(
+    maxdepth = 1,
+    cp = 0,
+    maxsurrogate = 0,
+    maxcompete = 0,
+    minsplit = 2,
+    minbucket = 1)
+  )
+tree_fits <- c(tree_fits, list(new_tree))
+tree_weights <- c(tree_weights, 1)
+
+new_tree_preds_grid_df <- x_grid %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = x_grid),
+    component_num = component_num
+  )
+
+new_tree_preds_df <- train_data %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = train_data),
+    component_num = component_num
+  )
+
+component_model_preds_grid <- bind_rows(
+  component_model_preds_grid,
+  new_tree_preds_grid_df
+)
+
+p0 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_line(data = new_tree_preds_grid_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = new_tree_preds_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ggtitle("New component model fit")
+
+plot_df_grid <- x_grid %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights)
+  )
+
+plot_df <- train_data %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights),
+    derivative = y - y_hat #2 * (y - y_hat)
+  )
+
+p_comp <- ggplot() +
+  geom_line(data = component_model_preds_grid, mapping = aes(x = x, y = y_hat, group = factor(component_num)), alpha = component_alpha, color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Component Model Predictions")
+
+
+p1 <- ggplot() +
+  geom_errorbar(data = plot_df %>% filter(y < y_hat),
+    mapping = aes(x = x, ymin = y, ymax = y_hat),
+    color = "cornflowerblue") +
+  geom_errorbar(data = plot_df %>% filter(y >= y_hat),
+    mapping = aes(x = x, ymin = y_hat, ymax = y),
+    color = "cornflowerblue") +
+  geom_point(data = train_data, mapping = aes(x = x, y = y)) +
+  geom_line(data = plot_df_grid, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = plot_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Ensemble Predictions")
+
+p2 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ylab("residual") +
+  ggtitle("Response variable for next component model:\nWhere does current ensemble go wrong?")
+
+grid.arrange(p0, p_comp, p1, p2, ncol = 1)
+```
+
+
+\newpage
+
+```{r, fig.height=9, echo=FALSE}
+component_num <- component_num + 1
+
+new_tree <- rpart(derivative ~ x, data = plot_df,
+  control = rpart.control(
+    maxdepth = 1,
+    cp = 0,
+    maxsurrogate = 0,
+    maxcompete = 0,
+    minsplit = 2,
+    minbucket = 1)
+  )
+tree_fits <- c(tree_fits, list(new_tree))
+tree_weights <- c(tree_weights, 1)
+
+new_tree_preds_grid_df <- x_grid %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = x_grid),
+    component_num = component_num
+  )
+
+new_tree_preds_df <- train_data %>%
+  mutate(
+    y_hat = predict(new_tree, newdata = train_data),
+    component_num = component_num
+  )
+
+component_model_preds_grid <- bind_rows(
+  component_model_preds_grid,
+  new_tree_preds_grid_df
+)
+
+p0 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_line(data = new_tree_preds_grid_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = new_tree_preds_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ylab("residual") +
+  ggtitle("New component model fit")
+
+plot_df_grid <- x_grid %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights)
+  )
+
+plot_df <- train_data %>%
+  mutate(
+    y_hat = calc_f_hat(x, b0 = b0, tree_fits = tree_fits, tree_weights = tree_weights),
+    derivative = y - y_hat #2 * (y - y_hat)
+  )
+
+p_comp <- ggplot() +
+  geom_line(data = component_model_preds_grid, mapping = aes(x = x, y = y_hat, group = factor(component_num)), alpha = component_alpha, color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Component Model Predictions")
+
+
+p1 <- ggplot() +
+  geom_errorbar(data = plot_df %>% filter(y < y_hat),
+    mapping = aes(x = x, ymin = y, ymax = y_hat),
+    color = "cornflowerblue") +
+  geom_errorbar(data = plot_df %>% filter(y >= y_hat),
+    mapping = aes(x = x, ymin = y_hat, ymax = y),
+    color = "cornflowerblue") +
+  geom_point(data = train_data, mapping = aes(x = x, y = y)) +
+  geom_line(data = plot_df_grid, mapping = aes(x = x, y = y_hat), color = "red") +
+  geom_point(data = plot_df, mapping = aes(x = x, y = y_hat), color = "red") +
+  xlim(c(-10, 10)) +
+  ggtitle("Current Ensemble Predictions")
+
+p2 <- ggplot() +
+  geom_point(data = plot_df, mapping = aes(x = x, y = derivative), color = "cornflowerblue") +
+  geom_hline(yintercept = 0) +
+  xlim(c(-10, 10)) +
+  ylab("residual") +
+  ggtitle("Response variable for next component model:\nWhere does current ensemble go wrong?")
+
+grid.arrange(p0, p_comp, p1, p2, ncol = 1)
+```
+
+\newpage
+
+#### Illustration of Learning Rate
+
+ * **Learning Rate:** Multiply predictions from our new component model by a small weight like 0.01.  Prevents us from immediately overfitting training data.  Comparing step 1 with learning rate 1 and learning rate 0.1:
+
+```{r, echo = FALSE, fig.width = 7.5, fig.height = 8}
+grid.arrange(p0_step1, p0_0.01, p_comp_step1, p_comp_0.01, p1_step1, p1_0.01, ncol = 2)
+```
+
+\newpage
+
+### Estimation with xgboost ("eXtreme Gradient Boosting")
+
+ * Data scientists have gotten better at catchy names since the days of Type I/Type II errors.
+ * One of several commonly used implementations of gradient boosting.  Written in C, interfaces to other languages like R and python
+ * Estimation can be done via the train function in the caret package.
+
+Let's look at the lidar data set:
+
+```{r, echo = FALSE, message = FALSE, warning=FALSE}
+library(readr)
+lidar <- read_table2("http://www.evanlray.com/data/all-of-nonparametric-stat/lidar.dat")
+```
+
+```{r, fig.height=3, message = FALSE}
+tt_split <- caret::createDataPartition(lidar$logratio, p = 0.8)
+lidar_train <- lidar %>% slice(tt_split[[1]])
+lidar_test <- lidar %>% slice(-tt_split[[1]])
+
+ggplot(data = lidar_train, mapping = aes(x = range, y = logratio)) +
+  geom_point()
+```
+
+```{r}
+library(caret)
+xgb_fit <- train(
+  logratio ~ range,
+  data = lidar_train,
+  method = "xgbTree",
+  trControl = trainControl(method = "cv", number = 10, returnResamp = "all"),
+  tuneGrid = expand.grid(
+    nrounds = c(10, 50, 100),
+    eta = 0.3, # learning rate; 0.3 is the default
+    gamma = 0, # minimum loss reduction to make a split; 0 is the default
+    max_depth = 1:5, # how deep are our trees?
+    subsample = c(0.8, 1), # proportion of observations to use in growing each tree
+    colsample_bytree = 1, # proportion of explanatory variables used in each tree
+    min_child_weight = 1 # think of this as how many observations must be in each leaf node
+  )
+)
+
+xgb_fit$results %>% select(nrounds, max_depth, subsample, RMSE)
+```
+
+Looks like we may be overfitting; our best RMSE is with the lowest values of max depth and nrounds.  Let's try a lower learning rate.  Also, subsample wasn't helpful.  Let's just stick with subsample = 1.
+
+```{r}
+library(caret)
+xgb_fit <- train(
+  logratio ~ range,
+  data = lidar_train,
+  method = "xgbTree",
+  trControl = trainControl(method = "cv", number = 10, returnResamp = "all"),
+  tuneGrid = expand.grid(
+    nrounds = c(5, 10, 20, 30, 40),
+    eta = c(0.1, 0.2, 0.3), # learning rate; 0.3 is the default
+    gamma = 0, # minimum loss reduction to make a split; 0 is the default
+    max_depth = 1:2, # how deep are our trees?
+    subsample = 1, # proportion of observations to use in growing each tree
+    colsample_bytree = 1, # proportion of explanatory variables used in each tree
+    min_child_weight = 1 # think of this as how many observations must be in each leaf node
+  )
+)
+
+xgb_fit$results %>% filter(RMSE == min(RMSE))
+```
+
+The best tuning parameter values were the middle of the ranges of values we tried (or at the edge of possible values, in the case of max\_depth); seems OK.
+
+Let's look at the predictions:
+
+```{r}
+lidar_test <- lidar_test %>%
+  mutate(
+    logratio_hat = predict(xgb_fit, lidar_test)
+  )
+
+ggplot() +
+  geom_point(data = lidar_train, mapping = aes(x = range, y = logratio)) +
+  geom_point(data = lidar_test, mapping = aes(x = range, y = logratio), color = "orange") +
+  geom_line(data = lidar_test, mapping = aes(x = range, y = logratio_hat), color = "orange")
+```
